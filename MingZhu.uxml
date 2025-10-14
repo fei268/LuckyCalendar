@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement style="flex-grow: 1; background-color: rgba(245, 231, 191, 0.66); border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; border-bottom-left-radius: 20px; border-top-width: 3px; border-right-width: 3px; border-bottom-width: 3px; border-left-width: 3px; border-left-color: rgba(151, 243, 68, 0.66); border-right-color: rgba(151, 243, 68, 0.66); border-top-color: rgba(151, 243, 68, 0.66); border-bottom-color: rgba(151, 243, 68, 0.66);">
+        <ui:Button text="X" name="CloseE" style="width: 30px; height: 30px; position: absolute; right: 0; border-top-left-radius: 30px; border-top-right-radius: 30px; border-bottom-right-radius: 30px; border-bottom-left-radius: 30px; border-left-color: rgb(111, 103, 103); border-right-color: rgb(111, 103, 103); border-top-color: rgb(111, 103, 103); border-bottom-color: rgb(111, 103, 103); background-color: rgb(0, 0, 0); color: rgb(255, 255, 255); -unity-font-style: bold;" />
+        <ui:Label text="请选择您的出生日期：" name="Label" style="width: 80%;" />
+        <ui:Toggle value="true" name="SexToggle">
+            <ui:Label text="男" name="ManLabel" />
+            <ui:Label text="女" name="WomenLabel" />
+        </ui:Toggle>
+        <ui:DropdownField label="Year：" name="YearDropdown" />
+        <ui:DropdownField label="Month：" name="MonthDropdown" />
+        <ui:DropdownField label="Day：" name="DayDropdown" />
+        <ui:DropdownField label="Time：" name="TimeDropdown" />
+        <ui:Button text="保存" name="ConfirmButton" enabled="true" style="opacity: 0; visibility: hidden;" />
+    </ui:VisualElement>
+</ui:UXML>
