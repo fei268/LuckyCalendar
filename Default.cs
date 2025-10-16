@@ -810,8 +810,11 @@ public class Default : MonoBehaviour
             //3,节日
             string holidayJP = CalendarData.GetJapanHoliday(date);
             var huangheiDao = CalendarData.GetHuangDaoShen(date);
+            var shiChen = CalendarData.GetShiChen(date.Hour);
             Label labelXiNan = xinan.Query<Label>().ToList()[0];
+
             labelXiNan.text = $"{holidayJP}";
+            labelXiNan.text += $"{CalendarData.GetRiLu(date, shiChen)}";
             labelXiNan.text += $"\n{huangheiDao.Name}[{huangheiDao.Type}]";
 
             //4-1 星座 28宿
