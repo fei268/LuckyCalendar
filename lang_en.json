@@ -1,0 +1,656 @@
+﻿{
+    "UI": {
+        "LifeTypes": [ "East Four Destiny", "West Four Destiny" ],
+        "WuXing": [ "Metal", "Wood", "Water", "Fire", "Earth" ]
+    },
+    "GanBaiJiDict": {
+        "甲": "On Jia day, do not open the granary, lest wealth be lost.",
+        "乙": "On Yi day, do not plant, for nothing will grow.",
+        "丙": "On Bing day, do not repair the stove, or misfortune will follow.",
+        "丁": "On Ding day, do not shave your head, or sores may form.",
+        "戊": "On Wu day, do not accept land, for it brings ill fortune.",
+        "己": "On Ji day, do not break contracts, or both parties will suffer.",
+        "庚": "On Geng day, do not weave, for the loom will be in vain.",
+        "辛": "On Xin day, do not make sauce, the flavor will spoil.",
+        "壬": "On Ren day, do not divert water, disaster will be hard to avoid.",
+        "癸": "On Gui day, do not file lawsuits, your case will be weak."
+    },
+    "ZhiBaiJiDict": {
+        "子": "On Zi day, avoid divination, lest you invite trouble.",
+        "丑": "On Chou day, do not wear a hat, lest you never return home.",
+        "寅": "On Yin day, do not make offerings, the spirits will not accept.",
+        "卯": "On Mao day, do not dig wells, the water will lose its scent.",
+        "辰": "On Chen day, do not weep, for mourning will follow.",
+        "巳": "On Si day, do not travel far, wealth will be lost.",
+        "午": "On Wu day, do not repair roofs, misfortune may strike the home.",
+        "未": "On Wei day, do not take medicine, poison may enter the body.",
+        "申": "On Shen day, do not set the bed, spirits may enter.",
+        "酉": "On You day, do not host feasts, drunken madness may follow.",
+        "戌": "On Xu day, do not eat dog meat, strange events will occur.",
+        "亥": "On Hai day, do not marry, it brings ill luck to the groom."
+    },
+    "TianGanWuXing": {
+        "甲": "Wood",
+        "乙": "Wood",
+        "丙": "Fire",
+        "丁": "Fire",
+        "戊": "Earth",
+        "己": "Earth",
+        "庚": "Metal",
+        "辛": "Metal",
+        "壬": "Water",
+        "癸": "Water"
+    },
+    "DiZhiWuXing": {
+        "子": "Water",
+        "丑": "Earth",
+        "寅": "Wood",
+        "卯": "Wood",
+        "辰": "Earth",
+        "巳": "Fire",
+        "午": "Fire",
+        "未": "Earth",
+        "申": "Metal",
+        "酉": "Metal",
+        "戌": "Earth",
+        "亥": "Water"
+    },
+    "ShengXiao": [
+        "Rat",
+        "Ox",
+        "Tiger",
+        "Rabbit",
+        "Dragon",
+        "Snake",
+        "Horse",
+        "Goat",
+        "Monkey",
+        "Rooster",
+        "Dog",
+        "Pig"
+    ],
+    "TwelveGodData": [
+        {
+            "Name": "Establish",
+            "Yi": "Good for setting beams, starting school, marriage, construction, erecting pillars, medical treatment, and travel.",
+            "Ji": "Avoid digging wells or sailing."
+        },
+        {
+            "Name": "Remove",
+            "Yi": "Good for rituals and medicine preparation.",
+            "Ji": "Avoid marriage, travel, and digging wells."
+        },
+        {
+            "Name": "Full",
+            "Yi": "Good for marriage, moving, tailoring, opening shops, rituals, travel, and planting.",
+            "Ji": "Avoid funerals."
+        },
+        {
+            "Name": "Level",
+            "Yi": "Good for marriage, building, moving, tailoring, and discussions.",
+            "Ji": "Avoid digging ditches and planting."
+        },
+        {
+            "Name": "Stable",
+            "Yi": "Good for rituals, marriage, moving, construction, hiring, and purchasing livestock.",
+            "Ji": "Avoid lawsuits and travel."
+        },
+        {
+            "Name": "Hold",
+            "Yi": "Auspicious for decisive actions: construction, planting, marriage, and digging wells.",
+            "Ji": "Avoid moving, travel, and opening storage."
+        },
+        {
+            "Name": "Break",
+            "Yi": "Good for hunting.",
+            "Ji": "Inauspicious day — avoid all major activities."
+        },
+        {
+            "Name": "Danger",
+            "Yi": "Avoid all activities.",
+            "Ji": "Very unlucky: climbing, riding, boating, and traveling."
+        },
+        {
+            "Name": "Complete",
+            "Yi": "A day of success — good for construction, marriage, study, travel, opening business, and planting.",
+            "Ji": "Avoid lawsuits and quarrels."
+        },
+        {
+            "Name": "Harvest",
+            "Yi": "Good for study, marriage, building, trading, moving, and planting.",
+            "Ji": "Avoid funerals and acupuncture."
+        },
+        {
+            "Name": "Open",
+            "Yi": "Good for study, marriage, building, moving, opening business, and achieving wishes.",
+            "Ji": "Avoid funerals or unclean events."
+        },
+        {
+            "Name": "Close",
+            "Yi": "Good for sealing things, building embankments, and burying.",
+            "Ji": "Avoid business openings, travel, and all other affairs."
+        }
+    ],
+    "SixYao": [
+        {
+            "Name": "Best",
+            "JiShi": "All day auspicious"
+        },
+        {
+            "Name": "Poor",
+            "JiShi": "Auspicious at noon"
+        },
+        {
+            "Name": "AMGood",
+            "JiShi": "Auspicious in the morning"
+        },
+        {
+            "Name": "Fair",
+            "JiShi": "Inauspicious at noon"
+        },
+        {
+            "Name": "PMGood",
+            "JiShi": "Auspicious in the afternoon"
+        },
+        {
+            "Name": "Worst",
+            "JiShi": "All day inauspicious"
+        }
+    ],
+    "WuXingStrong": {
+        "金": "When metal is strong, temper rises; guard your tongue against disputes.",
+        "木": "When wood flourishes, kindness grows soft; easy to sway, lacking resolve.",
+        "水": "When water abounds, thoughts overflow; emotions waver, mind too deep.",
+        "火": "When fire blazes, words grow sharp; beware of rash acts and conflict.",
+        "土": "When earth prevails, nature turns slow; steady yet lacking flexibility."
+    },
+    "WuXingWeak": {
+        "金": "When metal is weak, will falters; strengthen resolve and wear metal tones.",
+        "木": "When wood is frail, purpose drifts; dwell near greens to nourish spirit.",
+        "水": "When water is thin, mind dulls; stay near rivers to refresh wisdom.",
+        "火": "When fire wanes, spirit dims; bask in sunlight to regain vitality.",
+        "土": "When earth is light, heart unsettled; meditate to root your essence."
+    },
+    "WuXingMissing": {
+        "金": "Lacking metal weakens resolve; favor earth, avoid excessive fire.",
+        "木": "Lacking wood stifles growth; nurture water, avoid sharp metal.",
+        "水": "Lacking water clouds thought; seek metal’s aid, avoid heavy earth.",
+        "火": "Lacking fire chills the heart; seek wood’s warmth, avoid raging waves.",
+        "土": "Lacking earth shakes foundation; seek fire’s warmth, avoid wood’s clash."
+    },
+    "WuXingCombo": {
+        "木火旺": "Wood and fire prosper — bright spirit and quick wit arise.",
+        "火土旺": "Fire and earth unite — strength and ambition secure fortune.",
+        "土金旺": "Earth and metal support — wealth steady and enduring.",
+        "金水旺": "Metal and water blend — wisdom and eloquence shine.",
+        "水木旺": "Water feeds wood — insight flows and learning thrives.",
+        "金火冲": "Metal and fire clash — control anger and avoid strife.",
+        "水火冲": "Water and fire oppose — stay balanced and calm.",
+        "木土冲": "Wood and earth conflict — rest mind and act with care."
+    },
+    "WuXingAdvice": {
+        "金": "Seek west and metal essence; avoid fierce fires to preserve strength.",
+        "木": "Stay near eastern greens; plant life to renew your vitality.",
+        "水": "Meditate by streams; blue and jade soothe your soul.",
+        "火": "Bask in sunlight; kindness and warmth nurture your spirit.",
+        "土": "Remain centered; cultivate stability to anchor your fate."
+    },
+    "GanZhiName": {
+        "甲子": "Rat on the roof",
+        "丙子": "Rat in the field",
+        "戊子": "Rat in the granary",
+        "庚子": "Rat on the beam",
+        "壬子": "Rat on the mountain",
+        "乙丑": "Ox of the sea",
+        "丁丑": "Ox in the lake",
+        "己丑": "Ox in the pen",
+        "辛丑": "Ox on the road",
+        "癸丑": "Ox outside the fence",
+        "丙寅": "Tiger of the forest",
+        "戊寅": "Tiger crossing mountains",
+        "庚寅": "Tiger leaving the hills",
+        "壬寅": "Tiger through the woods",
+        "甲寅": "Tiger standing firm",
+        "丁卯": "Rabbit gazing at the moon",
+        "己卯": "Rabbit in the woods",
+        "辛卯": "Rabbit in the moon cave",
+        "癸卯": "Rabbit in the forest",
+        "乙卯": "Rabbit of enlightenment",
+        "戊辰": "Dragon of clear warmth",
+        "庚辰": "Dragon of mercy",
+        "壬辰": "Dragon that brings rain",
+        "甲辰": "Dragon beneath the pond",
+        "丙辰": "Dragon in the sky",
+        "己巳": "Blessed serpent",
+        "辛巳": "Serpent of winter's rest",
+        "癸巳": "Serpent in the grass",
+        "乙巳": "Serpent emerging from the cave",
+        "丁巳": "Serpent in the pond",
+        "庚午": "Horse in the hall",
+        "壬午": "Horse in the army",
+        "甲午": "Horse in the clouds",
+        "丙午": "Horse on the road",
+        "戊午": "Horse in the stable",
+        "辛未": "Sheep of fortune",
+        "癸未": "Sheep in the flock",
+        "乙未": "Respected sheep",
+        "丁未": "Lost sheep",
+        "己未": "Sheep of the meadow",
+        "壬申": "Graceful monkey",
+        "甲申": "Monkey among trees",
+        "丙申": "Monkey on the mountain",
+        "戊申": "Independent monkey",
+        "庚申": "Fruit-eating monkey",
+        "癸酉": "Rooster among stars",
+        "乙酉": "Noonday crower",
+        "丁酉": "Lone rooster",
+        "己酉": "Morning-calling rooster",
+        "辛酉": "Caged rooster",
+        "甲戌": "Guardian dog",
+        "丙戌": "Sleeping dog",
+        "戊戌": "Dog entering the mountains",
+        "庚戌": "Temple dog",
+        "壬戌": "Loyal home dog",
+        "乙亥": "Passing pig",
+        "丁亥": "Pig over the hill",
+        "己亥": "Temple pig",
+        "辛亥": "Farmed pig",
+        "癸亥": "Pig beneath the forest"
+    },
+    "StarInfo": [
+        {
+            "Name": "Horn(角)",
+            "General": "Deng Yu",
+            "Luck": "Lucky",
+            "Yi": "Marriage, travel, wear new clothes, construction, set pillars, install doors, tailoring, moving",
+            "Ji": "Funeral",
+            "Sheng": "Born under this star, one works hard for family in youth, but enjoys peace and prosperity in old age."
+        },
+        {
+            "Name": "Neck(亢)",
+            "General": "Wu Han",
+            "Luck": "Unlucky",
+            "Yi": "Planting, trading",
+            "Ji": "Building houses, burial",
+            "Sheng": "Born under this star, one has little fortune; avoid extravagance to enjoy peace and honor in old age."
+        },
+        {
+            "Name": "Root(氐)",
+            "General": "Jia Fu",
+            "Luck": "Unlucky",
+            "Yi": "Buying land, planting",
+            "Ji": "Funeral, construction, marriage",
+            "Sheng": "This star brings wealth and success; life grows more prosperous with age."
+        },
+        {
+            "Name": "Room(房)",
+            "General": "Geng Yan",
+            "Luck": "Lucky",
+            "Yi": "Rituals, marriage, beam raising, moving",
+            "Ji": "Buying land, tailoring",
+            "Sheng": "Born under this star, one is virtuous and prosperous, gaining wisdom and peace with age."
+        },
+        {
+            "Name": "Heart(心)",
+            "General": "Kou Xun",
+            "Luck": "Unlucky",
+            "Yi": "Rituals, moving, travel",
+            "Ji": "Tailoring, others",
+            "Sheng": "Though facing hardships, one enjoys good fortune and contentment overall."
+        },
+        {
+            "Name": "Tail(尾)",
+            "General": "Cen Peng",
+            "Luck": "Lucky",
+            "Yi": "Marriage, crafting",
+            "Ji": "Tailoring",
+            "Sheng": "One enjoys fortune but may face financial loss; act carefully to preserve wealth."
+        },
+        {
+            "Name": "Basket(箕)",
+            "General": "Feng Yi",
+            "Luck": "Lucky",
+            "Yi": "Building, digging ponds, opening doors, collecting wealth",
+            "Ji": "Marriage, tailoring",
+            "Sheng": "Home life may be unstable; compassion brings protection and blessing."
+        },
+        {
+            "Name": "Dipper(斗)",
+            "General": "Zhu You",
+            "Luck": "Lucky",
+            "Yi": "Tailoring, construction, opening doors, releasing water",
+            "Ji": "None",
+            "Sheng": "Though born with modest fortune, talent earns respect and favor."
+        },
+        {
+            "Name": "Ox(牛)",
+            "General": "Ji Zun",
+            "Luck": "Unlucky",
+            "Yi": "None",
+            "Ji": "Marriage, construction",
+            "Sheng": "Blessed yet short-lived; long life brings poverty unless one practices virtue and kindness."
+        },
+        {
+            "Name": "Girl(女)",
+            "General": "Jing Dan",
+            "Luck": "Unlucky",
+            "Yi": "Learning arts",
+            "Ji": "Funeral, lawsuits, tailoring",
+            "Sheng": "Argumentative nature causes trouble; humility and goodness bring balance."
+        },
+        {
+            "Name": "Emptiness(虛)",
+            "General": "Gai Yan",
+            "Luck": "Unlucky",
+            "Yi": "None",
+            "Ji": "Opening doors, releasing water",
+            "Sheng": "Beware disputes and mistakes; act with care in all things."
+        },
+        {
+            "Name": "Danger(危)",
+            "General": "Jian Duo",
+            "Luck": "Unlucky",
+            "Yi": "Travel, wealth seeking",
+            "Ji": "Building, burial, opening doors, releasing water",
+            "Sheng": "Goals are achievable but obstacles appear midway."
+        },
+        {
+            "Name": "Room(室)",
+            "General": "Geng Chun",
+            "Luck": "Lucky",
+            "Yi": "Marriage, moving, construction, rituals, digging wells",
+            "Ji": "Funeral",
+            "Sheng": "Misfortune in youth, success in old age; beware loss during travel."
+        },
+        {
+            "Name": "Wall(壁)",
+            "General": "Zang Gong",
+            "Luck": "Lucky",
+            "Yi": "Marriage, building, burial",
+            "Ji": "Traveling south",
+            "Sheng": "Prone to illness, but kindness and moderation bring long life."
+        },
+        {
+            "Name": "Legs(奎)",
+            "General": "Ma Wu",
+            "Luck": "Neutral",
+            "Yi": "Travel, tailoring, repairing houses",
+            "Ji": "Opening stores",
+            "Sheng": "Longevity and later-life fortune, but poor business luck."
+        },
+        {
+            "Name": "Bond(婁)",
+            "General": "Liu Long",
+            "Luck": "Lucky",
+            "Yi": "Marriage, house repair, garden building",
+            "Ji": "None",
+            "Sheng": "Early hardship, later success; indulgence leads to poverty."
+        },
+        {
+            "Name": "Stomach(胃)",
+            "General": "Wu Cheng",
+            "Luck": "Lucky",
+            "Yi": "Marriage, burial, public affairs",
+            "Ji": "Private matters",
+            "Sheng": "Hard youth, prosperous middle age."
+        },
+        {
+            "Name": "Hairy Head(昴)",
+            "General": "Wang Liang",
+            "Luck": "Unlucky",
+            "Yi": "None",
+            "Ji": "Marriage, all events",
+            "Sheng": "Hardship in youth, happiness and stability in later years."
+        },
+        {
+            "Name": "Net(畢)",
+            "General": "Chen Jun",
+            "Luck": "Lucky",
+            "Yi": "Building, burial, marriage, bridge making, digging wells",
+            "Ji": "None",
+            "Sheng": "Dreams are hard to achieve, but caution and kindness bring blessings."
+        },
+        {
+            "Name": "Turtle Beak(觜)",
+            "General": "Chuan Jun",
+            "Luck": "Unlucky",
+            "Yi": "None",
+            "Ji": "Building, burial, all events",
+            "Sheng": "Unstable home life; kindness brings peace despite hardship."
+        },
+        {
+            "Name": "Three Stars(參)",
+            "General": "Du Mao",
+            "Luck": "Unlucky",
+            "Yi": "Travel, building, setting gates",
+            "Ji": "Marriage, burial",
+            "Sheng": "Enjoys blessings and success but pride may bring loss."
+        },
+        {
+            "Name": "Well(井)",
+            "General": "Yao Qi",
+            "Luck": "Lucky",
+            "Yi": "Rituals, planting, construction",
+            "Ji": "Tailoring",
+            "Sheng": "Marriage may be weak, but compassion brings late-life fortune."
+        },
+        {
+            "Name": "Ghost(鬼)",
+            "General": "Wang Ba",
+            "Luck": "Unlucky",
+            "Yi": "Burial",
+            "Ji": "Construction, marriage, westward travel",
+            "Sheng": "Hard-working youth, success only through endurance and patience."
+        },
+        {
+            "Name": "Willow(柳)",
+            "General": "Ren Guang",
+            "Luck": "Unlucky",
+            "Yi": "None",
+            "Ji": "Opening doors, water release, funeral",
+            "Sheng": "Fortunate life but prone to conflict; act cautiously."
+        },
+        {
+            "Name": "Star(星)",
+            "General": "Li Zhong",
+            "Luck": "Unlucky",
+            "Yi": "Marriage, planting",
+            "Ji": "Funeral",
+            "Sheng": "Blessed and prosperous life; most wishes come true."
+        },
+        {
+            "Name": "Extended Net(張)",
+            "General": "Wan Xiu",
+            "Luck": "Lucky",
+            "Yi": "Marriage, market opening, rituals, burial",
+            "Ji": "None",
+            "Sheng": "Self-reliant and successful; goals are often achieved."
+        },
+        {
+            "Name": "Wings(翼)",
+            "General": "Pi Quan",
+            "Luck": "Unlucky",
+            "Yi": "None",
+            "Ji": "Burial, marriage, construction, all events",
+            "Sheng": "Born into hardship, but virtue brings divine favor."
+        },
+        {
+            "Name": "Chariot(軫)",
+            "General": "Liu Zhi",
+            "Luck": "Lucky",
+            "Yi": "Buying land, study, construction, marriage, tailoring",
+            "Ji": "Travel north",
+            "Sheng": "Blessed throughout life; fortune increases with age."
+        }
+    ],
+    "ChengGu": [
+        {
+            "Weight": 2.1,
+            "Text": "A life of hardship and misfortune, disasters come often, nothing achieved in the end."
+        },
+        {
+            "Weight": 2.2,
+            "Text": "Cold and lonely, destined to beg; a life of toil without rest."
+        },
+        {
+            "Weight": 2.3,
+            "Text": "Light destiny, hard to succeed; family bonds weak, wandering afar."
+        },
+        {
+            "Weight": 2.4,
+            "Text": "No fortune or support, a life of struggle, relying on no kin."
+        },
+        {
+            "Weight": 2.5,
+            "Text": "Weak inheritance, all depends on one’s own labor and perseverance."
+        },
+        {
+            "Weight": 2.6,
+            "Text": "Fortune earned through hardship, better days come after leaving home."
+        },
+        {
+            "Weight": 2.7,
+            "Text": "Acts alone, little family help, efforts bear few fruits."
+        },
+        {
+            "Weight": 2.8,
+            "Text": "Drifting through life, ancestral wealth but a dream; better after changing name or place."
+        },
+        {
+            "Weight": 2.9,
+            "Text": "Luck comes late, success after forty; life improves with change."
+        },
+        {
+            "Weight": 3.0,
+            "Text": "Hard-working yet restless, steady labor brings modest comfort in old age."
+        },
+        {
+            "Weight": 3.5,
+            "Text": "Limited blessings from family, maintain old paths for a peaceful life."
+        },
+        {
+            "Weight": 4.0,
+            "Text": "Steady fortune and good heart lead to lasting peace and prosperity."
+        },
+        {
+            "Weight": 5.0,
+            "Text": "Fortune rises with age; success follows persistence and effort."
+        },
+        {
+            "Weight": 6.0,
+            "Text": "Fame and wealth assured, a life of abundance and glory."
+        },
+        {
+            "Weight": 7.2,
+            "Text": "A ruler among men, supreme fortune and power predestined."
+        }
+    ],
+    "NaYinDict": {
+        "甲子": "Gold in the Sea",
+        "乙丑": "Gold in the Sea",
+        "丙寅": "Fire in the Furnace",
+        "丁卯": "Fire in the Furnace",
+        "戊辰": "Wood in the Great Forest",
+        "己巳": "Wood in the Great Forest",
+        "庚午": "Soil by the Roadside",
+        "辛未": "Soil by the Roadside",
+        "壬申": "Sword Edge Gold",
+        "癸酉": "Sword Edge Gold",
+
+        "甲戌": "Fire on the Mountain",
+        "乙亥": "Fire on the Mountain",
+        "丙子": "Water under the Riverbank",
+        "丁丑": "Water under the Riverbank",
+        "戊寅": "Earth on the City Wall",
+        "己卯": "Earth on the City Wall",
+        "庚辰": "White Wax Gold",
+        "辛巳": "White Wax Gold",
+        "壬午": "Willow Tree Wood",
+        "癸未": "Willow Tree Wood",
+
+        "甲申": "Water in the Spring",
+        "乙酉": "Water in the Spring",
+        "丙戌": "Earth on the Roof",
+        "丁亥": "Earth on the Roof",
+        "戊子": "Thunderbolt Fire",
+        "己丑": "Thunderbolt Fire",
+        "庚寅": "Pine and Cypress Wood",
+        "辛卯": "Pine and Cypress Wood",
+        "壬辰": "Flowing Water",
+        "癸巳": "Flowing Water",
+
+        "甲午": "Gold in the Sand",
+        "乙未": "Gold in the Sand",
+        "丙申": "Fire beneath the Mountain",
+        "丁酉": "Fire beneath the Mountain",
+        "戊戌": "Wood on the Flat Land",
+        "己亥": "Wood on the Flat Land",
+        "庚子": "Earth on the Wall",
+        "辛丑": "Earth on the Wall",
+        "壬寅": "Gold Foil Gold",
+        "癸卯": "Gold Foil Gold",
+
+        "甲辰": "Buddha Lamp Fire",
+        "乙巳": "Buddha Lamp Fire",
+        "丙午": "Heavenly River Water",
+        "丁未": "Heavenly River Water",
+        "戊申": "Courier Station Earth",
+        "己酉": "Courier Station Earth",
+        "庚戌": "Ornamental Hairpin Gold",
+        "辛亥": "Ornamental Hairpin Gold",
+        "壬子": "Mulberry and Catalpa Wood",
+        "癸丑": "Mulberry and Catalpa Wood",
+
+        "甲寅": "Water of the Great Stream",
+        "乙卯": "Water of the Great Stream",
+        "丙辰": "Sand Earth",
+        "丁巳": "Sand Earth",
+        "戊午": "Heavenly Fire",
+        "己未": "Heavenly Fire",
+        "庚申": "Pomegranate Wood",
+        "辛酉": "Pomegranate Wood",
+        "壬戌": "Water of the Great Sea",
+        "癸亥": "Water of the Great Sea"
+    },
+    "ZodiacSign": [
+        "Aries",
+        "Taurus",
+        "Gemini",
+        "Cancer",
+        "Leo",
+        "Virgo",
+        "Libra",
+        "Scorpio",
+        "Sagittarius",
+        "Capricorn",
+        "Aquarius",
+        "Pisces"
+    ],
+    "Bagua": [ "☰QIAN Palace-Heaven", "☷KUN Palace-Earth", "☳ZHEN Palace-Thunder", "☴XUN Palace-Wind", "☵KAN Palace-Water", "☲LI Palace-Fire", "☶GEN Palace-Mountain", "☱DUI Palace-Lake" ],
+    "SolarTerms": [
+        "Slight Cold",
+        "Great Cold",
+        "Beginning of Spring",
+        "Rain Water",
+        "Awakening of Insects",
+        "Spring Equinox",
+        "Pure Brightness",
+        "Grain Rain",
+        "Beginning of Summer",
+        "Grain Full",
+        "Grain in Ear",
+        "Summer Solstice",
+        "Slight Heat",
+        "Great Heat",
+        "Beginning of Autumn",
+        "Limit of Heat",
+        "White Dew",
+        "Autumn Equinox",
+        "Cold Dew",
+        "Frost's Descent",
+        "Beginning of Winter",
+        "Slight Snow",
+        "Great Snow",
+        "Winter Solstice"
+    ]
+}
