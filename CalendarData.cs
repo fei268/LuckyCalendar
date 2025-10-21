@@ -6,6 +6,17 @@ using System.Linq;
 using Debug = UnityEngine.Debug;
 using Newtonsoft.Json.Linq;
 using System.Reflection.Emit;
+using System.Numerics;
+
+public struct NineStarInfo
+{
+    public int StarNo;         // 星序号 1~9
+    public string StarName;    // 一白、二黑……
+    public string Luck;        // 旺、生、死、煞、退
+    public string DeLing;      // 得令、失令
+    public string ShiLing;     // 时令（或空字符串）
+    public Color BgColor;      // 背景色（UI）
+}
 
 public class CalendarData : MonoBehaviour
 {
@@ -683,7 +694,7 @@ public class CalendarData : MonoBehaviour
         string ganText = LangManager.Get("GanBaiJiDict", riGan);
         string zhiText = LangManager.Get("ZhiBaiJiDict", riZhi);
 
-        return $"{ganText} {zhiText}";
+        return $"{ganText}，{zhiText}";
     }
 
     /// <summary>
@@ -782,51 +793,59 @@ public class CalendarData : MonoBehaviour
     /// </summary>
     public static string CalculateWeight(DateTime birth, string bronTime)
     {
-        // 年
-        string ganZhi = GetChineseCalendar(birth).GanZhiYear;
+        // 获取农历信息
+        var lunar = GetChineseCalendar(birth);
+        int lunarYear = lunar.LunarYear;
+        int lunarMonth = lunar.LunarMonth; // 1~12
+        int lunarDay = lunar.LunarDay;     // 1~30
 
+        // ===== 年权重 =====
+        string ganZhi = lunar.GanZhiYear;
         decimal yearWeight = YearWeightTable.ContainsKey(ganZhi) ? YearWeightTable[ganZhi] : 0m;
 
-        // 月
-        int monthIndex = birth.Month - 1;
-        decimal monthWeight = MonthWeightTable[monthIndex];
+        // ===== 月权重 =====
+        decimal monthWeight = 0m;
+        if (MonthWeightTable != null && lunarMonth >= 1 && lunarMonth <= MonthWeightTable.Length)
+            monthWeight = MonthWeightTable[lunarMonth - 1];
 
-        // 日
-        int dayIndex = birth.Day - 1;
-        decimal dayWeight = DayWeightTable[dayIndex];
+        // ===== 日权重 =====
+        decimal dayWeight = 0m;
+        if (DayWeightTable != null && lunarDay >= 1 && lunarDay <= DayWeightTable.Length)
+            dayWeight = DayWeightTable[lunarDay - 1];
 
-        // 时
+        // ===== 时权重 =====
         decimal hourWeight = 0m;
         if (!string.IsNullOrEmpty(bronTime))
         {
-            // 解析起始小时
             string[] parts = bronTime.Split('-');
             if (parts.Length == 2)
             {
                 if (int.TryParse(parts[0].Split(':')[0], out int startHour))
                 {
-                    // 将起始小时映射到时辰表（0-23 -> 0-11）
                     int hourIndex = startHour / 2;
-                    hourIndex = hourIndex % 12; // 确保在0-11
-                    hourWeight = HourWeightTable[hourIndex];
+                    hourIndex = hourIndex % 12; // 0~11
+                    if (HourWeightTable != null && hourIndex >= 0 && hourIndex < HourWeightTable.Length)
+                        hourWeight = HourWeightTable[hourIndex];
                 }
             }
         }
 
         decimal totalWeight = yearWeight + monthWeight + dayWeight + hourWeight;
 
-        // 查找解读（如果没有精确匹配，可自己定义查找逻辑，如四舍五入到最近）
-        decimal key = Math.Round(totalWeight, 1); // 四舍五入到一位小数
+        // ===== 查找解读 =====
+        decimal key = Math.Round(totalWeight, 1);
         var list = LangManager.GetArray("ChengGu");
         if (list == null || list.Count == 0) return "";
+
         foreach (var item in list)
         {
             if (item.TryGetValue("Weight", out var val) && decimal.TryParse(val.ToString(), out var w))
             {
                 if (Math.Abs(w - key) < 0.01m)
-                    return item.TryGetValue("Text", out var text) ? text.ToString() : "No interpretation.";
+                return item.TryGetValue("Text", out var text) ? text.ToString() : "No interpretation.";
             }
         }
+
         return "";
     }
 
@@ -4126,99 +4145,61 @@ public class CalendarData : MonoBehaviour
     }
 
     /// <summary>
-    /// 年-九宫飞星
+    /// 计算年飞星并将结果直接填入九宫格 Label
     /// 顺飞 567891234 逆飞 543219876
     /// </summary>
-    /// <param name="date"></param>
-    /// <returns></returns>
-    public static (int StarNo, bool isForward) GetYearStar(DateTime date)
+    public static int[] GetYearStar(DateTime date)
     {
         int year = date.Year;
-        int lastTwo = year % 100;                 // 年份后两位
-        int sum = (lastTwo / 10) + (lastTwo % 10); // 个位十位相加
-
+        int lastTwo = year % 100;
+        int sum = (lastTwo / 10) + (lastTwo % 10);
         int baseNum = year < 2000 ? 10 : 9;
 
-        // 若相加大于基准，则将其拆分再相加一次
         if (sum > baseNum)
             sum = (sum / 10) + (sum % 10);
 
         int yearStar = baseNum - sum;
         if (yearStar == 0)
-            yearStar = 9; // 余数为0时，视为九紫星
+            yearStar = 9;
 
-        // 2000年前顺飞，2000年后逆飞
-        bool isForward = year < 2000;
+        bool isForward = year < 2000 ? true : false; // 2000年后逆飞，之前顺飞
 
-        return (yearStar, isForward);
-    }
+        // 九宫格中 label 的顺序（0~8）
+        // 0北, 1东北, 2东, 3东南, 4中, 5西南, 6西, 7西北, 8南
+        int[] forwardSeq = { 4, 8, 5, 6, 1, 7, 2, 3, 0 }; // 顺飞（起于中宫）
+        int[] backwardSeq = { 4, 0, 3, 2, 7, 1, 6, 5, 8 }; // 逆飞（起于中宫）
 
-    /// <summary>
-    /// 根据日干支判断十二时辰吉凶（主要依据天干相合、相克、地支三合、六合、相冲）
-    /// </summary>
-    /// <returns>返回一个Dictionary<string, string>，key为时辰（子~亥），value为“吉”或“凶”或“平”</returns>
-    public static List<(string Name, string Luck)> GetShiChenLuck(DateTime date)
-    {
-        var result = new List<(string, string)>();
-        string ganZhi = GetChineseCalendar(date).GanZhiDay;
-        string dayGan = ganZhi.Substring(0, 1);
-        string dayZhi = ganZhi.Substring(1, 1);
-        string dayFive = GetFive(dayZhi);
-        
-        var sheng = new Dictionary<string, string>
+        int[] seq = isForward ? forwardSeq : backwardSeq;
+
+        // 找到起始位置（入中宫的星）
+        int startIndex = Array.IndexOf(seq, 4);
+        if (startIndex < 0) startIndex = 0;
+
+        // 生成飞星序列
+        int[] stars = new int[9];
+        for (int i = 0; i < 9; i++)
         {
-            ["木"] = "火",
-            ["火"] = "土",
-            ["土"] = "金",
-            ["金"] = "水",
-            ["水"] = "木"
-        };
-
-        foreach (var hourZhi in DiZhi)
-        {
-            string luck = "平";
-            string hourFive = GetFive(hourZhi);
-
-            if (GetSanHe(ganZhi).Contains(hourZhi)) luck = "吉";
-            if (GetChong(ganZhi).Contains(hourZhi)) luck = "凶";
-            if (GetHai(ganZhi).Contains(hourZhi)) luck = "凶";
-            if (GetXing(ganZhi).Contains(hourZhi)) luck = "凶";
-            if (GetRiLu(date,ganZhi).Contains(hourZhi)) luck = "禄";
-            if (sheng[dayFive] == hourFive) luck = "进";// 主“向外有益”，凡事进展、施为顺遂
-            if (sheng[hourFive] == dayFive) luck = "生";// 主“得人相助”，凡事得助、得益
-
-            result.Add((hourZhi, luck));
+            int pos = seq[(startIndex + i) % 9]; // 对应label下标
+            int num = Wrap9(yearStar, i, isForward); // 计算当前飞星号
+            stars[pos] = num;
         }
-        return result;
+
+        Debug.Log($"[{year}] 年飞星：{yearStar} {(isForward ? "顺飞" : "逆飞")}");
+        return stars;
     }
 
-
-    /// <summary>
-    /// 杨公十三忌日
-    /// </summary>
-    /// <param name="date"></param>
-    /// <returns></returns>
-    public static string GetYangGong13(DateTime date)
+    // 飞星号循环（顺飞 +1，逆飞 -1）
+    static int Wrap9(int baseStar, int offset, bool forward)
     {
-        string lunarDate = GetChineseCalendar(date).LunarDate;
-        string[] ygDict = { "正月十三", "二月十一", "三月初九", "四月初七", "五月初五", "六月初三", "七月初一", "七月廿九", "八月廿七", "九月廿五", "十月廿三", "冬月廿一", "腊月十九" };
-
-        if (ygDict.Contains(lunarDate))
-            return "杨公十三日，诸事皆忌";
-
-        return "";
+        int n = forward ? (baseStar + offset - 1) % 9 + 1
+                        : ((baseStar - offset - 1 + 9 * 10) % 9) + 1;
+        return n;
     }
 
     /// <summary>
     /// 月-九宫飞星
     /// </summary>
-    /// <param name="date"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    /// <summary>
-    /// 获取指定日期的月九宫飞星序号（1-9）及方向（true=顺飞, false=逆飞）
-    /// </summary>
-    public static (int StarNo, bool isForward) GetMonthStar(DateTime date)
+    public static int[] GetMonthStar(DateTime date)
     {
         // 获取年干支
         string gzYear = GetChineseCalendar(date).GanZhiYear; // 例如 "甲子"
@@ -4258,10 +4239,10 @@ public class CalendarData : MonoBehaviour
                 throw new Exception("年份地支不在规则范围内");
         }
 
-        // 计算农历月份（处理闰月）
+        // 获取农历月份（处理闰月）
         ChineseLunisolarCalendar chineseCalendar = new ChineseLunisolarCalendar();
         int lunarYear = chineseCalendar.GetYear(date);
-        int lunarMonthRaw = chineseCalendar.GetMonth(date); // 可能是1..13
+        int lunarMonthRaw = chineseCalendar.GetMonth(date);
         int leapMonth = chineseCalendar.GetLeapMonth(lunarYear); // 0表示无闰月
 
         int lunarMonth;
@@ -4279,60 +4260,61 @@ public class CalendarData : MonoBehaviour
             lunarMonth = lunarMonthRaw;
         }
 
-        // 计算飞星
-        int offset = lunarMonth - 1; // 从正月开始偏移
-        int monthStar;
+        // 计算当月中宫飞星
+        int offset = lunarMonth - 1;
+        int monthStar = forward
+            ? ((firstMonthStar - 1 + offset) % 9) + 1
+            : ((firstMonthStar - 1 - offset + 90) % 9) + 1; // 确保正数
 
-        if (forward)
+        // 对应九宫Label位置：{4,8,5,6,1,7,2,3,0}（左东右西，上南下北）
+        int[] uiOrder = { 4, 8, 5, 6, 1, 7, 2, 3, 0 };
+        int[] stars = new int[9];
+
+        // 依次顺飞/逆飞生成每宫飞星
+        for (int i = 0; i < 9; i++)
         {
-            monthStar = ((firstMonthStar - 1) + offset) % 9 + 1; // 顺飞
-        }
-        else
-        {
-            monthStar = ((firstMonthStar - 1) - offset % 9 + 9) % 9 + 1; // 逆飞
+            int starNo = ((monthStar - 1 + (forward ? i : -i) + 9) % 9) + 1;
+            stars[uiOrder[i]] = starNo;
         }
 
-        return (monthStar, forward);
+        return stars;
     }
 
     /// <summary>
     /// 日-九宫飞星序号（1-9）和飞行方向（true=顺飞，false=逆飞）
     /// </summary>
-    public static (int StarNo, bool isForward) GetDayStar(DateTime date)
+    public static int[] GetDayStar(DateTime date)
     {
-        // 节气名称对应的起始九宫飞星及顺逆飞
-        var solarStartStars = new Dictionary<string, (int startStar, bool forward)>()
+        var solarStartStars = new Dictionary<string, (int startStar, bool forward)>
     {
         { "冬至", (1, true) }, // 一白顺飞
-        { "雨水", (7, true) }, // 七赤顺飞
-        { "谷雨", (4, true) }, // 四碧顺飞
-        { "夏至", (9, false)}, // 九紫逆飞
-        { "处暑", (3, false)}, // 三碧逆飞
-        { "霜降", (6, false)}  // 六白逆飞
+        { "雨水", (7, true) },
+        { "谷雨", (4, true) },
+        { "夏至", (9, false) }, // 九紫逆飞
+        { "处暑", (3, false) },
+        { "霜降", (6, false) }
     };
 
-        // 需要处理的节气集合（中文名称）
-        string[] relevantJieQi = new string[] { "冬至", "雨水", "谷雨", "夏至", "处暑", "霜降" };
+        string[] relevantJieQi = { "冬至", "雨水", "谷雨", "夏至", "处暑", "霜降" };
 
-        // 辅助：从某个日期（含）向后寻找第一个甲子日（最多搜索 maxDays 天）
         DateTime FindFirstJiaZiAfter(DateTime startInclusive, int maxDays = 120)
         {
             DateTime d = startInclusive.Date;
             for (int i = 0; i <= maxDays; i++)
             {
-                var gz = GetChineseCalendar(d).GanZhiDay; // 假设返回格式如 "甲子"
-                if (!string.IsNullOrEmpty(gz) && gz.StartsWith("甲子"))
+                var gz = GetChineseCalendar(d).GanZhiDay;
+                if (!string.IsNullOrEmpty(gz) && gz.Contains("甲子"))
                     return d;
                 d = d.AddDays(1);
             }
-            throw new Exception($"在 {startInclusive.ToShortDateString()} 后 {maxDays} 天内未找到甲子日。");
+            throw new Exception($"在 {startInclusive:yyyy-MM-dd} 后 {maxDays} 天内未找到甲子日。");
         }
 
-        // 1) 收集 year-1, year, year+1 三年的节气（以避免跨年问题）
-        List<(string name, DateTime dt)> jieqiList = new List<(string, DateTime)>();
+        // 收集三年节气
+        var jieqiList = new List<(string name, DateTime dt)>();
         for (int y = date.Year - 1; y <= date.Year + 1; y++)
         {
-            string[] allJieQi = Get24JieQiYear(y); // 假定返回 ["立春","yyyy-MM-dd HH:mm:ss","雨水","..."]
+            string[] allJieQi = Get24JieQiYear(y);
             for (int i = 0; i < allJieQi.Length; i += 2)
             {
                 string name = allJieQi[i];
@@ -4342,96 +4324,88 @@ public class CalendarData : MonoBehaviour
             }
         }
 
-        // 2) 对每个相关节气计算其"节气後第一個甲子日"
-        var jieqiWithFirstJiaZi = new List<(string name, DateTime jieqiDt, DateTime firstJiaZiDt)>();
-        foreach (var item in jieqiList)
-        {
-            DateTime after = item.dt.AddDays(1); // "节气後" 通常理解为节气日之后开始寻找
-            DateTime firstJiaZi = FindFirstJiaZiAfter(after, 200);
-            jieqiWithFirstJiaZi.Add((item.name, item.dt, firstJiaZi));
-        }
+        // 计算每个节气后的第一个甲子日
+        var jieqiWithFirstJiaZi = jieqiList.Select(item =>
+            (item.name, item.dt, firstJiaZi: FindFirstJiaZiAfter(item.dt, 200))
+        ).ToList();
 
-        // 3) 从这些 firstJiaZi 中选择最近且 <= date 的那个（即已经生效的起点）
-        var candidates = jieqiWithFirstJiaZi
-                         .Where(x => x.firstJiaZiDt.Date <= date.Date)
-                         .OrderByDescending(x => x.firstJiaZiDt)
-                         .ToList();
+        // 找到当前日期对应节气周期
+        var chosen = jieqiWithFirstJiaZi
+            .Where(x => x.firstJiaZi.Date <= date.Date)
+            .OrderByDescending(x => x.firstJiaZi)
+            .FirstOrDefault();
 
-        if (candidates.Count == 0)
-        {
-            throw new Exception("未找到适用于该日期的已生效节气起点（请检查 Get24JieQiYear 和日期范围）。");
-        }
+        if (chosen == default)
+            throw new Exception("未找到适用节气。");
 
-        var chosen = candidates.First(); // 最近已生效的节气起点
         var (startStar, forward) = solarStartStars[chosen.name];
-
-        // 4) 计算从 firstJiaZi 到目标日期的天数差（非负）
-        int offsetDays = (date.Date - chosen.firstJiaZiDt.Date).Days;
-        // 飞星每 9 天循环一次，所以只取 mod9
+        int offsetDays = (date.Date - chosen.firstJiaZi.Date).Days;
         int step = offsetDays % 9;
 
-        int dayStar;
-        if (forward) // 顺飞：起点 + step
+        int dayStar = forward
+            ? ((startStar - 1 + step) % 9) + 1
+            : ((startStar - 1 - step + 9 * 10) % 9) + 1; // 保证正数
+
+        // ✅ 九宫Label顺序：左东右西，上南下北
+        int[] uiOrder = { 4, 8, 5, 6, 1, 7, 2, 3, 0 };
+        int[] stars = new int[9];
+
+        // 根据顺逆飞填入九宫对应飞星
+        for (int i = 0; i < 9; i++)
         {
-            dayStar = ((startStar - 1) + step) % 9 + 1;
-        }
-        else // 逆飞：起点 - step
-        {
-            dayStar = ((startStar - 1) - step % 9 + 9) % 9 + 1;
+            int starNo = ((dayStar - 1 + (forward ? i : -i) + 9) % 9) + 1;
+            stars[uiOrder[i]] = starNo;
         }
 
-        return (dayStar, forward);
+        return stars;
     }
 
     /// <summary>
     /// 时-九宫飞星
     /// </summary>
-    /// <param name="date"></param>
-    /// <returns></returns>
-    /// <summary>
-    /// 计算日时九宫飞星
-    /// 返回：当前时辰飞星 + 整天12个时辰飞星数组 + 顺逆飞标识
-    /// </summary>
-    public static (int StarNo, bool isForward) GetHourStar(DateTime date)
+    public static int[] GetHourStar(DateTime date)
     {
-        int[] hourStars = new int[12]; // 12个时辰
-
         // 取最近冬至或夏至
         string[] allJieQi = Get24JieQiYear(date.Year);
         List<(string name, DateTime dt)> jieqiList = new List<(string, DateTime)>();
         for (int i = 0; i < allJieQi.Length; i += 2)
             jieqiList.Add((allJieQi[i], Convert.ToDateTime(allJieQi[i + 1])));
 
-        var filtered = jieqiList.Where(x => x.name == "冬至" || x.name == "夏至")
-                                .OrderBy(x => x.dt).ToList();
+        var filtered = jieqiList
+            .Where(x => x.name == "冬至" || x.name == "夏至")
+            .OrderBy(x => x.dt)
+            .ToList();
 
         var lastSolar = filtered[0];
         foreach (var jq in filtered)
+        {
             if (jq.dt <= date) lastSolar = jq;
             else break;
+        }
 
-        bool forward = lastSolar.name == "冬至"; // 冬至顺飞，夏至逆飞
+        bool forward = lastSolar.name == "冬至"; // 冬至后顺飞，夏至后逆飞
 
         // 当天日地支
         string dayGZ = GetChineseCalendar(date).GanZhiDay;
-        char dayDZ = dayGZ[1]; // 地支
+        char dayDZ = dayGZ.Length >= 2 ? dayGZ[1] : '子';
 
         // 子时起始飞星
         int startHourStar = 1;
-        if (forward) // 冬至顺飞
+        if (forward)
         {
             if ("子午卯酉".Contains(dayDZ)) startHourStar = 1;
             else if ("辰戌丑未".Contains(dayDZ)) startHourStar = 4;
             else if ("寅申巳亥".Contains(dayDZ)) startHourStar = 7;
         }
-        else // 夏至逆飞
+        else
         {
             if ("子午卯酉".Contains(dayDZ)) startHourStar = 9;
             else if ("辰戌丑未".Contains(dayDZ)) startHourStar = 6;
             else if ("寅申巳亥".Contains(dayDZ)) startHourStar = 3;
         }
 
-        // 生成整天12个时辰飞星
+        // 生成全天12时辰飞星
+        int[] hourStars = new int[12];
         for (int hourIndex = 0; hourIndex < 12; hourIndex++)
         {
             if (forward)
@@ -4440,14 +4414,155 @@ public class CalendarData : MonoBehaviour
                 hourStars[hourIndex] = ((startHourStar - 1 - hourIndex + 9) % 9) + 1;
         }
 
-        // 当前时辰索引（子时23:00~0:59为0，依次类推）
+        // 当前时辰索引（子时 = 0）
         int currentHour = date.Hour;
         int hourIndexCur = ((currentHour + 1) / 2) % 12;
-        if (currentHour == 23) hourIndexCur = 0; // 修正23点对应子时
+        if (currentHour == 23) hourIndexCur = 0;
 
-        int hourStar = hourStars[hourIndexCur];//hourStars是整天的数组，似乎用不到返回，这里暂时保留一下吧
+        int hourStar = hourStars[hourIndexCur]; // 当前时辰飞星
 
-        return (hourStar, forward);
+        // ✅ 生成九宫数组（UI 顺序）
+        int[] uiOrder = { 4, 8, 5, 6, 1, 7, 2, 3, 0 };
+        int[] stars = new int[9];
+        for (int i = 0; i < 9; i++)
+        {
+            stars[uiOrder[i]] = ((hourStar - 1 + (forward ? i : -i) + 9) % 9) + 1;
+        }
+
+        return stars;
+    }
+
+    /// <summary>
+    /// 九星吉凶
+    /// </summary>
+    /// <param name="stars"></param>
+    /// <param name="year"></param>
+    /// <returns></returns>
+    public static List<NineStarInfo> GetNineStarLuck(int[] stars, int year)
+    {
+        List<NineStarInfo> result = new List<NineStarInfo>();
+
+        var starList = LangManager.GetArray("NineStars");
+        var starJx = LangManager.Get2DArray("FlyingStarLuck");
+
+        int yearIndex = GetYearIndex(year);
+        if (yearIndex < 0 || yearIndex > 8) yearIndex = 0;
+
+        Dictionary<int, int[]> deLingMap = new Dictionary<int, int[]>
+    {
+        { 1, new int[] { 8, 9, 1 } },
+        { 2, new int[] { 9, 1, 2 } },
+        { 3, new int[] { 1, 2, 3 } },
+        { 4, new int[] { 2, 3, 4 } },
+        { 5, new int[] { 3, 4, 5 } },
+        { 6, new int[] { 4, 5, 6 } },
+        { 7, new int[] { 5, 6, 7 } },
+        { 8, new int[] { 6, 7, 8 } },
+        { 9, new int[] { 7, 8, 9 } }
+    };
+
+        Dictionary<int, Color> starColors = new Dictionary<int, Color>
+    {
+        { 1, new Color(0.4f, 0.8f, 1f, 0.35f) },
+        { 2, new Color(0.3f, 0.3f, 0.3f, 0.35f) },
+        { 3, new Color(0.0f, 0.6f, 0.4f, 0.35f) },
+        { 4, new Color(0.0f, 0.4f, 0.2f, 0.35f) },
+        { 5, new Color(0.85f, 0.65f, 0.2f, 0.35f) },
+        { 6, new Color(0.8f, 0.8f, 0.85f, 0.35f) },
+        { 7, new Color(0.9f, 0.45f, 0.2f, 0.35f) },
+        { 8, new Color(1f, 0.75f, 0.4f, 0.35f) },
+        { 9, new Color(0.6f, 0.3f, 0.7f, 0.35f) }
+    };
+
+        foreach (int starNo in stars)
+        {
+            var starItem = starList[starNo - 1] as Dictionary<string, object>;
+            string starName = starItem["Name"].ToString();
+            string luck = starJx[starNo - 1][yearIndex];
+            string deLing = "";
+            string shiLing = "";
+
+            if (deLingMap.TryGetValue(starNo, out var arr) && arr.Contains(yearIndex))
+                deLing = "得令";
+
+            Color color = starColors.ContainsKey(starNo) ? starColors[starNo] : Color.white;
+
+            result.Add(new NineStarInfo
+            {
+                StarNo = starNo,
+                StarName = starName,
+                Luck = luck,
+                DeLing = deLing,
+                ShiLing = shiLing,
+                BgColor = color
+            });
+        }
+
+        return result;
+    }
+
+    // 运周期计算
+    static int GetYearIndex(int year)
+    {
+        int baseYear = 1864;       // 上元一运起始年份
+        int diff = year - baseYear;
+        int yunIndex = (diff / 20) % 9;  // 每运20年
+        return yunIndex;
+    }
+
+    /// <summary>
+    /// 根据日干支判断十二时辰吉凶（主要依据天干相合、相克、地支三合、六合、相冲）
+    /// </summary>
+    /// <returns>返回一个Dictionary<string, string>，key为时辰（子~亥），value为“吉”或“凶”或“平”</returns>
+    public static List<(string Name, string Luck)> GetShiChenLuck(DateTime date)
+    {
+        var result = new List<(string, string)>();
+        string ganZhi = GetChineseCalendar(date).GanZhiDay;
+        string dayGan = ganZhi.Substring(0, 1);
+        string dayZhi = ganZhi.Substring(1, 1);
+        string dayFive = GetFive(dayZhi);
+
+        var sheng = new Dictionary<string, string>
+        {
+            ["木"] = "火",
+            ["火"] = "土",
+            ["土"] = "金",
+            ["金"] = "水",
+            ["水"] = "木"
+        };
+
+        foreach (var hourZhi in DiZhi)
+        {
+            string luck = "平";
+            string hourFive = GetFive(hourZhi);
+
+            if (GetSanHe(ganZhi).Contains(hourZhi)) luck = "吉";
+            if (GetChong(ganZhi).Contains(hourZhi)) luck = "凶";
+            if (GetHai(ganZhi).Contains(hourZhi)) luck = "凶";
+            if (GetXing(ganZhi).Contains(hourZhi)) luck = "凶";
+            if (GetRiLu(date, ganZhi).Contains(hourZhi)) luck = "禄";
+            if (sheng[dayFive] == hourFive) luck = "进";// 主“向外有益”，凡事进展、施为顺遂
+            if (sheng[hourFive] == dayFive) luck = "生";// 主“得人相助”，凡事得助、得益
+
+            result.Add((hourZhi, luck));
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// 杨公十三忌日
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static string GetYangGong13(DateTime date)
+    {
+        string lunarDate = GetChineseCalendar(date).LunarDate;
+        string[] ygDict = { "正月十三", "二月十一", "三月初九", "四月初七", "五月初五", "六月初三", "七月初一", "七月廿九", "八月廿七", "九月廿五", "十月廿三", "冬月廿一", "腊月十九" };
+
+        if (ygDict.Contains(lunarDate))
+            return "杨公十三日，诸事皆忌";
+
+        return "";
     }
 
     /// <summary>
@@ -4465,82 +4580,6 @@ public class CalendarData : MonoBehaviour
                 allJieQi.AddRange(jq);
         }
         return allJieQi.ToArray();
-    }
-
-    /// <summary>
-    /// 九宫飞星年月日时和吉凶
-    /// </summary>
-    /// <param name="type">输入 year / month / day / hour </param>
-    /// <param name="date"></param>
-    /// <returns></returns>
-    public static (string StarName, string JiXiong, string DeLing, string ShiLing, bool isForward) GetNineStarLuck(string type, DateTime date)
-    {
-        int starNo = 0;
-        bool forward = true;
-
-        switch (type)
-        {
-            case "year":
-                var yStar = GetYearStar(date);
-                starNo = yStar.StarNo;
-                forward = yStar.isForward;
-                break;
-            case "month":
-                var mStar = GetMonthStar(date);
-                starNo = mStar.StarNo;
-                forward = mStar.isForward;
-                break;
-            case "day":
-                var dStar = GetDayStar(date);
-                starNo = dStar.StarNo;
-                forward = dStar.isForward;
-                break;
-            case "hour":
-                var hStar = GetHourStar(date);
-                starNo = hStar.StarNo;
-                forward = hStar.isForward;
-                break;
-            default:
-                return ("", "", "", "", true);
-        }
-
-        if (starNo <= 0) return ("", "", "", "", forward);
-
-        int yearIndex = GetYearIndex(date.Year);
-        if (yearIndex < 0 || yearIndex > 8) yearIndex = 0;
-
-        var starList = LangManager.GetArray("NineStars");
-        var starItem = starList[starNo - 1] as Dictionary<string, object>;
-
-        var starJx = LangManager.Get2DArray("FlyingStarLuck");
-        string lucky = starJx[starNo - 1][yearIndex];
-
-        Dictionary<int, int[]> deLingMap = new Dictionary<int, int[]>
-    {
-        { 1, new int[] { 8, 9, 1 } },
-        { 2, new int[] { 9, 1, 2 } },
-        { 3, new int[] { 1, 2, 3 } },
-        { 4, new int[] { 2, 3, 4 } },
-        { 5, new int[] { 3, 4, 5 } },
-        { 6, new int[] { 4, 5, 6 } },
-        { 7, new int[] { 5, 6, 7 } },
-        { 8, new int[] { 6, 7, 8 } },
-        { 9, new int[] { 7, 8, 9 } }
-    };
-
-        if (deLingMap.TryGetValue(starNo, out var arr) && arr.Contains(yearIndex))
-            lucky += "（得令）";
-
-        return (starItem["Name"].ToString(), lucky, starItem["MeaningGood"].ToString(), starItem["MeaningBad"].ToString(), forward);
-    }
-
-    //获取年运，九宫飞星用
-    static int GetYearIndex(int year)
-    {
-        int baseYear = 1864;       // 上元一运起始年份
-        int diff = year - baseYear;
-        int yunIndex = (diff / 20) % 9;  // 每运 20 年，取余得到 0~8
-        return yunIndex;
     }
 
     /// <summary>
@@ -4687,8 +4726,8 @@ public class CalendarData : MonoBehaviour
 
         string res = "";
         if (dayLong > 0) res += $"{CN[dayLong - 1]}龙治水";
-        if (dayNiu > 0) res += $"\n{CN[dayNiu - 1]}牛耕田";
-        if (dayBing > 0) res += $"\n{CN[dayBing - 1]}人分饼";
+        if (dayNiu > 0) res += $"{CN[dayNiu - 1]}牛耕田";
+        if (dayBing > 0) res += $"{CN[dayBing - 1]}人分饼";
 
         return res;
     }
@@ -4908,7 +4947,7 @@ public class CalendarData : MonoBehaviour
     public static string GetHai(string gz)
     {
         string dz = gz.Substring(1, 1);
-        return HaiPairs.ContainsKey(dz) ? $"害：{HaiPairs[dz]}" : "";
+        return HaiPairs.ContainsKey(dz) ? $"害 {HaiPairs[dz]}" : "";
     }
 
     /// <summary>
@@ -4944,50 +4983,524 @@ public class CalendarData : MonoBehaviour
     /// <summary>
     /// 判断某天是否为日本节假日
     /// </summary>
-    public static string GetJapanHoliday(DateTime date)
+    public static List<(int Day, string Name, bool Jia)> GetJapanHolidays(int year, int month)
     {
-        string holiday = null;
+        var holidays = new List<(int, string, bool)>();
 
-        // 计算浮动节日
-        if (date == GetNthWeekdayOfMonth(date.Year, 1, DayOfWeek.Monday, 2))
-            holiday = "成人の日";
-        else if (date == GetNthWeekdayOfMonth(date.Year, 7, DayOfWeek.Monday, 3))
-            holiday = "海の日";
-        else if (date == GetNthWeekdayOfMonth(date.Year, 9, DayOfWeek.Monday, 3))
-            holiday = "敬老の日";
-        else if (date == GetNthWeekdayOfMonth(date.Year, 10, DayOfWeek.Monday, 2))
-            holiday = "スポーツの日";
+        // 固定节日
+        var fixedHolidays = new Dictionary<(int Month, int Day), string>
+    {
+        {(1, 1), "元日"},
+        {(2, 11), "建国記念の日"},
+        {(2, 23), "天皇誕生日"}, // 令和天皇
+        {(4, 29), "昭和の日"},
+        {(5, 3), "憲法記念日"},
+        {(5, 4), "みどりの日"},
+        {(5, 5), "こどもの日"},
+        {(8, 11), "山の日"},
+        {(11, 3), "文化の日"},
+        {(11, 23), "勤労感謝の日"},
+    };
 
-        // 春分日、秋分日
-        string[] jieQi = Get24JieQi(date.Year, date.Month);
-
-        if (jieQi[0] == "春分" && Convert.ToDateTime(jieQi[1]) == date.Date) holiday = "春分の日";
-        if (jieQi[2] == "秋分" && Convert.ToDateTime(jieQi[3]) == date.Date) holiday = "秋分の日";
-
-        /* 报错，等后续处理
-        if (holiday == null)
+        foreach (var kv in fixedHolidays)
         {
-            DateTime prevDay = date.AddDays(-1);
-            string prevHoliday = GetJapanHoliday(prevDay); // 递归调用
-            if (!string.IsNullOrEmpty(prevHoliday) && prevDay.DayOfWeek == DayOfWeek.Sunday)
-            {
-                holiday = "振替休日";
-            }
-        }*/
+            if (kv.Key.Month == month)
+                holidays.Add((kv.Key.Day, kv.Value, true));
+        }
 
-        return holiday; // 非节日
+        // 浮动节日
+        void AddFloating(int m, int n, DayOfWeek dayOfWeek, string name)
+        {
+            var dt = GetNthWeekdayOfMonth(year, m, dayOfWeek, n);
+            if (dt.Month == month)
+                holidays.Add((dt.Day, name, true));
+        }
+
+        AddFloating(1, 2, DayOfWeek.Monday, "成人の日");
+        AddFloating(7, 3, DayOfWeek.Monday, "海の日");
+        AddFloating(9, 3, DayOfWeek.Monday, "敬老の日");
+        AddFloating(10, 2, DayOfWeek.Monday, "スポーツの日");
+
+        // 春分・秋分
+        string[] jieQi = Get24JieQi(year, month);
+        if (jieQi != null && jieQi.Length >= 4)
+        {
+            DateTime chunfen = Convert.ToDateTime(jieQi[1]).Date;
+            DateTime qiufen = Convert.ToDateTime(jieQi[3]).Date;
+            if (chunfen.Month == month)
+                holidays.Add((chunfen.Day, "春分の日", true));
+            if (qiufen.Month == month)
+                holidays.Add((qiufen.Day, "秋分の日", true));
+        }
+
+        // 振替休日（补假）
+        foreach (var h in holidays.ToList())
+        {
+            var date = new DateTime(year, month, h.Item1);
+            if (date.DayOfWeek == DayOfWeek.Sunday)
+            {
+                var next = date.AddDays(1);
+                // 如果次日非节日
+                if (!holidays.Any(x => x.Item1 == next.Day))
+                {
+                    if (next.Month == month)
+                        holidays.Add((next.Day, "振替休日", true));
+                }
+            }
+        }
+
+        holidays.Sort((a, b) => a.Item1.CompareTo(b.Item1));
+        return holidays;
     }
 
     /// <summary>
-    /// 计算某年某月第n个指定星期几
+    /// 中国节假日
     /// </summary>
-    private static DateTime GetNthWeekdayOfMonth(int year, int month, DayOfWeek weekday, int occurrence)
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static List<(int Day, string Name, bool Jia)> GetChinaHolidays(int year, int month)
     {
-        DateTime firstDay = new DateTime(year, month, 1);
-        int offset = (int)weekday - (int)firstDay.DayOfWeek;
-        if (offset < 0) offset += 7;
+        var holidays = new List<(int Day, string Name, bool Jia)>();
 
-        int day = 1 + offset + (occurrence - 1) * 7;
+        // 获取当月天数
+        int daysInMonth = DateTime.DaysInMonth(year, month);
+
+        for (int d = 1; d <= daysInMonth; d++)
+        {
+            DateTime date = new DateTime(year, month, d);
+            var cn = GetChineseCalendar(date);
+            bool jia = false;
+            var names = new List<string>();
+
+            // ===== 一、公历节日 =====
+            switch (month)
+            {
+                case 1:
+                    if (d == 1) { names.Add("元旦节"); jia = true; }
+                    break;
+                case 2:
+                    if (d == 14) names.Add("情人节");
+                    break;
+                case 3:
+                    if (d == 8) names.Add("妇女节");
+                    break;
+                case 4:
+                    if (d == 4) { names.Add("清明节"); jia = true; }
+                    if (d > 4 && d <= 6) { names.Add("清明节假"); jia = true; }
+                    break;
+                case 5:
+                    if (d == 1) { names.Add("劳动节"); jia = true; }
+                    break;
+                case 6:
+                    if (d == 1) names.Add("儿童节");
+                    break;
+                case 9:
+                    if (d == 10) names.Add("教师节");
+                    break;
+                case 10:
+                    if (d >= 1 && d <= 7) { names.Add("国庆节"); jia = true; }
+                    break;
+            }
+
+            // ===== 二、农历节日 =====
+            string lunar = cn.LunarDate;
+            int lm = cn.LunarMonth;
+            int ld = cn.LunarDay;
+            bool run = !string.IsNullOrEmpty(cn.RunMonth);
+
+            if (!run)
+            {
+                switch (lm)
+                {
+                    case 1:
+                        if (ld == 1) { names.Add("春节"); jia = true; }
+                        if (ld > 1 && ld <= 3) { names.Add("春节假"); jia = true; }
+                        if (ld == 15) names.Add("元宵节");
+                        break;
+                    case 2:
+                        if (ld == 2) names.Add("龙抬头");
+                        if (ld == 15) names.Add("二月半（鬼节）");
+                        break;
+                    case 3:
+                        if (ld == 3) names.Add("上巳节");
+                        break;
+                    case 5:
+                        if (ld == 5) { names.Add("端午节"); jia = true; }
+                        break;
+                    case 7:
+                        if (ld == 7) names.Add("七夕节");
+                        if (ld == 15) names.Add("中元节");
+                        break;
+                    case 8:
+                        if (ld == 15) { names.Add("中秋节"); jia = true; }
+                        break;
+                    case 9:
+                        if (ld == 9) names.Add("重阳节");
+                        break;
+                    case 12:
+                        if (ld == 8) names.Add("腊八节");
+                        if (ld >= 23 && ld <= 24) names.Add("小年");
+
+                        // ===== 除夕判断 =====
+                        ChineseLunisolarCalendar chineseCalendar = new ChineseLunisolarCalendar();
+                        int daysInLunar12 = chineseCalendar.GetDaysInMonth(year, lm); // 获取农历12月天数
+                        if (ld == daysInLunar12)
+                            names.Add("除夕");
+                        break;
+                }
+            }
+
+            if (names.Count > 0)
+            {
+                foreach (var n in names)
+                {
+                    holidays.Add((d, n, jia));
+                }
+            }
+        }
+
+        return holidays;
+    }
+
+    /// <summary>
+    /// 台湾节假日
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static List<(int Day, string Name, bool Jia)> GetTaiwanHolidays(int year, int month)
+    {
+        var result = new List<(int, string, bool)>();
+
+        // 本月天数
+        int days = DateTime.DaysInMonth(year, month);
+
+        for (int d = 1; d <= days; d++)
+        {
+            DateTime date = new DateTime(year, month, d);
+            var list = new List<string>();
+            bool jia = false;
+
+            int m = date.Month;
+            int day = date.Day;
+
+            // ===== 公历法定假日 =====
+            if (m == 1 && day == 1) { list.Add("元旦"); jia = true; }
+            if (m == 2 && day == 28) { list.Add("和平纪念日"); jia = true; }
+            if (m == 4 && day == 4) { list.Add("儿童节"); jia = true; }
+            if (m == 5 && day == 1) { list.Add("劳动节"); jia = true; }
+            if (m == 10 && day == 10) { list.Add("国庆日（双十节）"); jia = true; }
+
+            // ===== 农历节日 =====
+            var cn = GetChineseCalendar(date); // 调用农历信息函数
+            int lm = cn.LunarMonth;
+            int ld = cn.LunarDay;
+            bool run = !string.IsNullOrEmpty(cn.RunMonth);
+
+            if (!run)
+            {
+                switch (lm)
+                {
+                    case 1:
+                        if (ld == 1) { list.Add("春节"); jia = true; }
+                        if (ld == 15) list.Add("元宵节");
+                        break;
+
+                    case 5:
+                        if (ld == 5) { list.Add("端午节"); jia = true; }
+                        break;
+
+                    case 7:
+                        if (ld == 7) list.Add("七夕节");
+                        if (ld == 15) list.Add("中元节（鬼节）");
+                        break;
+
+                    case 8:
+                        if (ld == 15) { list.Add("中秋节"); jia = true; }
+                        break;
+
+                    case 9:
+                        if (ld == 9) list.Add("重阳节");
+                        break;
+
+                    case 12:
+                        if (ld == 8) list.Add("腊八节");
+                        break;
+                }
+
+                // ===== 除夕判断 =====
+                var nextDay = date.AddDays(1);
+                var nextCn = GetChineseCalendar(nextDay);
+                if (lm == 12 && nextCn.LunarMonth == 1 && nextCn.LunarDay == 1)
+                {
+                    list.Add("除夕");
+                    jia = true;
+                }
+            }
+
+            if (list.Count > 0)
+                result.Add((d, string.Join(",", list), jia));
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// 英美加澳等通用假日
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static List<(int Day, string Name,bool Jia)> GetEnglishHolidays(int year, int month)
+    {
+        var result = new List<(int, string,bool)>();
+        int days = DateTime.DaysInMonth(year, month);
+
+        for (int d = 1; d <= days; d++)
+        {
+            DateTime date = new DateTime(year, month, d);
+            var list = new List<string>();
+            int m = date.Month;
+            int day = date.Day;
+            DayOfWeek wd = date.DayOfWeek;
+
+            // ===== 固定国际节日 =====
+            if (m == 1 && day == 1) list.Add("New Year's Day");
+            if (m == 2 && day == 14) list.Add("Valentine's Day");
+            if (m == 3 && day == 17) list.Add("St. Patrick's Day");
+            if (m == 4 && day == 1) list.Add("April Fool's Day");
+            if (m == 10 && day == 31) list.Add("Halloween");
+            if (m == 12 && day == 25) list.Add("Christmas Day");
+            if (m == 12 && day == 26) list.Add("Boxing Day");
+
+            // ===== 美国 (USA) =====
+            if (m == 7 && day == 4) list.Add("Independence Day (USA)");
+            if (m == 11 && wd == DayOfWeek.Thursday)
+            {
+                int thursdayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 11, i).DayOfWeek == DayOfWeek.Thursday);
+                if (thursdayCount == 4) list.Add("Thanksgiving (USA)");
+            }
+
+            // ===== 英国 (UK) =====
+            if (m == 5 && wd == DayOfWeek.Monday)
+            {
+                int mondayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 5, i).DayOfWeek == DayOfWeek.Monday);
+                if (mondayCount == 1) list.Add("Early May Bank Holiday (UK)");
+                if (mondayCount == 4) list.Add("Spring Bank Holiday (UK)");
+            }
+            if (m == 8 && wd == DayOfWeek.Monday)
+            {
+                int mondayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 8, i).DayOfWeek == DayOfWeek.Monday);
+                if (mondayCount == 4) list.Add("Summer Bank Holiday (UK)");
+            }
+
+            // ===== 加拿大 (Canada) =====
+            if (m == 7 && day == 1) list.Add("Canada Day");
+            if (m == 9 && wd == DayOfWeek.Monday)
+            {
+                int mondayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 9, i).DayOfWeek == DayOfWeek.Monday);
+                if (mondayCount == 1) list.Add("Labour Day (Canada)");
+            }
+            if (m == 10 && wd == DayOfWeek.Monday)
+            {
+                int mondayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 10, i).DayOfWeek == DayOfWeek.Monday);
+                if (mondayCount == 2) list.Add("Thanksgiving (Canada)");
+            }
+
+            // ===== 澳大利亚 (Australia) =====
+            if (m == 1 && day == 26) list.Add("Australia Day");
+            if (m == 4 && day == 25) list.Add("ANZAC Day");
+            if (m == 6 && wd == DayOfWeek.Monday)
+            {
+                int mondayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 6, i).DayOfWeek == DayOfWeek.Monday);
+                if (mondayCount == 2) list.Add("King's Birthday (Australia)");
+            }
+
+            // ===== 浮动国际节日 =====
+            // Mother’s Day – 2nd Sunday of May
+            if (m == 5 && wd == DayOfWeek.Sunday)
+            {
+                int sundayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 5, i).DayOfWeek == DayOfWeek.Sunday);
+                if (sundayCount == 2) list.Add("Mother's Day");
+            }
+
+            // Father’s Day – 3rd Sunday of June (except AU: 1st Sunday of Sep)
+            if (m == 6 && wd == DayOfWeek.Sunday)
+            {
+                int sundayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 6, i).DayOfWeek == DayOfWeek.Sunday);
+                if (sundayCount == 3) list.Add("Father's Day (USA/UK/CA)");
+            }
+            if (m == 9 && wd == DayOfWeek.Sunday)
+            {
+                int sundayCount = Enumerable.Range(1, day)
+                    .Count(i => new DateTime(year, 9, i).DayOfWeek == DayOfWeek.Sunday);
+                if (sundayCount == 1) list.Add("Father's Day (Australia)");
+            }
+
+            // Easter Sunday
+            if (date == GetEasterSunday(year))
+                list.Add("Easter Sunday");
+
+            if (list.Count > 0)
+                result.Add((day, string.Join(", ", list),true));
+        }
+
+        return result;
+    }
+
+    // ===== 复活节计算函数（高德算法）=====
+    public static DateTime GetEasterSunday(int year)
+    {
+        int a = year % 19;
+        int b = year / 100;
+        int c = year % 100;
+        int d = b / 4;
+        int e = b % 4;
+        int f = (b + 8) / 25;
+        int g = (b - f + 1) / 3;
+        int h = (19 * a + b - d - g + 15) % 30;
+        int i = c / 4;
+        int k = c % 4;
+        int l = (32 + 2 * e + 2 * i - h - k) % 7;
+        int m = (a + 11 * h + 22 * l) / 451;
+        int month = (h + l - 7 * m + 114) / 31;
+        int day = ((h + l - 7 * m + 114) % 31) + 1;
         return new DateTime(year, month, day);
     }
+
+    /// <summary>
+    /// 计算五组吉数
+    /// </summary>
+    /// <param name="birth">生日 DateTime</param>
+    /// <param name="calcDate">用于日序号、干支、塔罗等的计算日期</param>
+    /// <returns>五组吉数 int[5]</returns>
+    public static int[] Calculate(DateTime birth, DateTime calcDate)
+    {
+        System.Random rand = new System.Random();
+
+        int[] result = new int[5];
+
+        // 获取干支与六曜信息
+        var lunar = GetChineseCalendar(calcDate);
+        string gzYear = lunar.GanZhiYear;
+        string gzMonth = lunar.GanZhiMonth;
+        string gzDay = lunar.GanZhiDay;
+        string gzTime = lunar.GanZhiTime;
+
+        decimal yearWeight = YearWeightTable.ContainsKey(gzYear) ? YearWeightTable[gzYear] : 1m;
+        int liuYaoFix = 0; // 六曜调整数
+        var yaoInfo = Get6Yao(lunar.LunarDate);
+        if (yaoInfo.JiXiong == "吉") liuYaoFix = 3;
+        else if (yaoInfo.JiXiong == "凶") liuYaoFix = -2;
+
+        // 星座
+        var zodiac = GetZodiacSign(calcDate);
+        int zodiacNum = zodiac.No;
+
+        // 九宫飞星
+        var hourStar = GetHourStar(calcDate);
+        int nineStarIndex = hourStar[4];
+
+        // -------------------------------
+        // 1️⃣ 个人灵数（生日总和）
+        int sum = birth.Year + birth.Month + birth.Day;
+        int lifeNum = sum;
+        while (lifeNum > 9)
+        {
+            int temp = 0;
+            foreach (char c in lifeNum.ToString())
+                temp += c - '0';
+            lifeNum = temp;
+        }
+        // 加年份权重微调
+        int num1 = lifeNum + (int)Math.Round(yearWeight) + rand.Next(0, 3);
+        result[0] = num1 > 9 ? num1 % 9 + 1 : num1;
+
+        // -------------------------------
+        // 2️⃣ 九星循环数
+        int dayOfYear = calcDate.DayOfYear;
+        int lucky2 = (dayOfYear * 3 + nineStarIndex) % 100;
+        lucky2 = lucky2 > 81 ? lucky2 - 50 : lucky2;
+        lucky2 = lucky2 < 10 ? lucky2 + 10 : lucky2;
+        result[1] = lucky2;
+
+        // -------------------------------
+        // 3️⃣ 干支六曜数
+        int ganZhiIndex = Array.IndexOf(TianGan, gzDay[0].ToString()) * 12 +
+                          Array.IndexOf(DiZhi, gzDay[1].ToString());
+        int lucky3 = (ganZhiIndex * 7 + liuYaoFix) % 100;
+        lucky3 = lucky3 > 81 ? lucky3 - 50 : lucky3;
+        lucky3 = lucky3 < 10 ? lucky3 + 12 : lucky3;
+        result[2] = lucky3;
+
+        // -------------------------------
+        // 4️⃣ 四源塔罗数
+        int birthNum = result[0];
+        int dayNum = result[1];
+        int hourNum = (DateTime.Now.Hour % 24) + 1;
+        int baseVal = birthNum + dayNum + hourNum + zodiacNum;
+        int tarotNum = (baseVal + birthNum * hourNum + liuYaoFix) % 100;
+        tarotNum = tarotNum > 81 ? tarotNum - 50 : tarotNum;
+        tarotNum = tarotNum < 10 ? tarotNum + 10 : tarotNum;
+        tarotNum = (tarotNum / 10) * 10 + rand.Next(1, 10);
+        result[3] = tarotNum;
+
+        // -------------------------------
+        // 5️⃣ 蓍草卦象数
+        int[] yao = new int[6];
+        int[] ms = new int[6];
+        for (int i = 0; i < 6; i++)
+        {
+            yao[i] = rand.Next(2) == 0 ? 1 : -1;
+            ms[i] = DateTime.Now.Millisecond;
+        }
+
+        int yangSum = 0, yinSum = 0;
+        for (int i = 0; i < 6; i++)
+        {
+            if (yao[i] == 1) yangSum += ms[i] % 10;
+            else yinSum += ms[i] / 100;
+        }
+
+        int upperIndex = (yao[0] == 1 ? 4 : 0) + (yao[1] == 1 ? 2 : 0) + (yao[2] == 1 ? 1 : 0);
+        int lowerIndex = (yao[3] == 1 ? 4 : 0) + (yao[4] == 1 ? 2 : 0) + (yao[5] == 1 ? 1 : 0);
+        upperIndex = upperIndex == 0 ? 8 : upperIndex;
+        lowerIndex = lowerIndex == 0 ? 8 : lowerIndex;
+
+        int temp1 = 50 - (yangSum + yinSum);
+        temp1 = temp1 <= 0 ? Math.Abs(temp1) : temp1;
+
+        int val1 = (temp1 * upperIndex) / (lowerIndex + 1);
+        int val2 = (temp1 * lowerIndex) / (upperIndex + 1);
+
+        int lucky5a = val1 > 81 ? val1 - 50 : val1;
+        lucky5a = lucky5a < 10 ? 10 + (lucky5a % 10) : lucky5a;
+        int lucky5b = val2 > 81 ? val2 - 50 : val2;
+        lucky5b = lucky5b < 10 ? 10 + (lucky5b % 10) : lucky5b;
+
+        lucky5b = lucky5b % 10;
+        lucky5b = lucky5b == 0 ? rand.Next(1, 10) : lucky5b;
+        int lucky5 = (lucky5a / 10) * 10 + lucky5b;
+
+        result[4] = lucky5;
+
+        return result;
+    }
+
+    /// <summary>
+    /// 计算某年某月第n个指定星期几，用于日本节日
+    /// </summary>
+    public static DateTime GetNthWeekdayOfMonth(int year, int month, DayOfWeek dayOfWeek, int nth)
+    {
+        DateTime firstDay = new DateTime(year, month, 1);
+        int offset = ((int)dayOfWeek - (int)firstDay.DayOfWeek + 7) % 7;
+        return firstDay.AddDays(offset + 7 * (nth - 1));
+    }
+
 }
