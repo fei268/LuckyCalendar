@@ -104,7 +104,6 @@ public class Default : MonoBehaviour
         uiDocument = GetComponent<UIDocument>();
 
         //多语言测试：
-        langCode = "zh";
         LangManager.Load(langCode);
         /*
 #if UNITY_IOS || UNITY_ANDROID
