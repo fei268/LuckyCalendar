@@ -19,6 +19,21 @@
     -unity-background-image-tint-color: rgba(255, 255, 255, 0.72);
 }
 
+#Calendars Button Label,#NineGongY Label,#NineGongD Label {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+}
+
 .highlight {
     background-color: rgba(151, 92, 248, 0.65);
+}
+
+
+#Details VisualElement{
+    padding:2px;
 }

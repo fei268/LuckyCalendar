@@ -1,17 +1,24 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection.Emit;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Label = UnityEngine.UIElements.Label;
 using Debug = UnityEngine.Debug;
 using System.IO;
+using System.Numerics;
+using Vector2 = UnityEngine.Vector2;
+using System.Text;
 
 public class Default : MonoBehaviour
 {
     private string _langCode;//多语言
+    StyleColor goodColor = new StyleColor(new Color32(204, 0, 0, 255));//红
+    StyleColor normalColor = new StyleColor(new Color32(0, 102, 102, 255));//深绿
 
     UIDocument uiDocument;//根界面
     VisualElement root;//根界面下的默认首元素
@@ -24,22 +31,38 @@ public class Default : MonoBehaviour
     VisualElement calConts;//月历区
 
     ScrollView normalCont;//初始文字内容
-    VisualElement contsPage, detailsCont,ziweiPan;//内容容器
+    VisualElement contsPage, detailsCont, ziweiPan;//内容容器
 
     List<Label> luckTimeNum, luckTime;//吉时
 
     AudioClip[] popSounds;//泡泡声音组
+    Sprite normalSprite, burstSprite, dynamicTexture;//泡泡背景
 
-    Button weekBtn;
+    Button weekBtn;//星期按钮
 
-    DateTime currentDate;
+    DateTime currentDate;//选择后的日期
+
+    TextField noteInput;
+    string noteKey;//记事本键
+    Label currentLab;// 当前点击日期的小红点
+
+    HolidayImageLoader holidayLoader;
+    CalendarData cal=new CalendarData();
+
+    Dictionary<string, DateTime> solarTerms;
+    List<(int Day, string Name, bool Jia)> holidays;
+    string holiToday;
+
+
+    List<VisualElement> nineElement;
+
 
     void Awake()
     {
         uiDocument = GetComponent<UIDocument>();
         root = uiDocument.rootVisualElement;
         //内容滑动展示
-        contsPage= root.Q<VisualElement>("Contents");
+        contsPage = root.Q<VisualElement>("Contents");
         swipe = new SwipeView(contsPage);
         contsPage.AddManipulator(swipe);
     }
@@ -55,33 +78,41 @@ public class Default : MonoBehaviour
         //_langCode = "en";
         await LangManager.LoadAsync(_langCode);
 
+        //加载点击月历时的声音
+        popSounds = Resources.LoadAll<AudioClip>("popsound");
+        normalSprite = Resources.Load<Sprite>("dayIbackimg");
+        burstSprite = Resources.Load<Sprite>("dayIback_burst");
+        dynamicTexture = Resources.Load<Sprite>("s02");
+
         //初始文字-相当于序言
         MainText();
 
         //吉时
         luckTimeNum = root.Q<VisualElement>("LuckTimeNum").Query<Label>().ToList();
-        InitLuckTime();
+        InitLuckTime(DateTime.Now);
 
         //导航按钮
         calMenu = uiDocument.rootVisualElement.Q<VisualElement>("Menu");
         menuBtn = calMenu.Query<Button>().ToList();
         GetMoonPhaseIndex(currentDate);
-        JArray menuNames = JArray.Parse(LangManager.Get("UI", "MenuName"));
-
         if (menuBtn.Count == 3)
         {
-            menuBtn[0].text= menuNames.Count==3 ? menuNames[0].ToString() : "";
-            menuBtn[1].text = menuNames.Count == 3 ? menuNames[1].ToString() : "";
-            menuBtn[2].text = menuNames.Count == 3 ? menuNames[2].ToString() : "";
             menuBtn[0].clicked += () => ChangeMonth(-1);
             menuBtn[1].clicked += () => ChangeMonth(0);
             menuBtn[2].clicked += () => ChangeMonth(1);
         }
 
-
-
         //月历
+        holidayLoader = new HolidayImageLoader();
         InitCalendar(DateTime.Now.Year, DateTime.Now.Month);
+
+        //日历
+        InitCalDetail(DateTime.Now);
+
+        //记事本
+        noteInput = root.Q<TextField>("NoteInput");
+        noteInput.RegisterValueChangedCallback(OnNoteChanged);
+
     }
 
     void Update()
@@ -121,20 +152,26 @@ public class Default : MonoBehaviour
     /// <summary>
     /// 初始化吉时
     /// </summary>
-    void InitLuckTime()
+    void InitLuckTime(DateTime date)
     {
         luckTime = root.Q<VisualElement>("LuckTimes").Query<Label>().ToList();
-        
+
+        if (luckTime.Count != 12) return;
+
+        // 获取十二地支
+        string[] shiChenArray = new string[12];
         for (int i = 0; i < 12; i++)
         {
-            string key;
-            if (i == 0) key = "23";
-            else key = ((i - 1) * 2 + 1).ToString(); // 对应 JSON 的 key
-
-            luckTime[i].text = LangManager.Get("ShiChenTable", key);
+            string key = (i == 0) ? "23" : ((i - 1) * 2 + 1).ToString();
+            shiChenArray[i] = LangManager.Get("ShiChenTable", key);
+            luckTime[i].text = shiChenArray[i]; // 先赋地支
         }
     }
 
+    /// <summary>
+    /// 上个月下个月
+    /// </summary>
+    /// <param name="offset"></param>
     void ChangeMonth(int offset)
     {
         DateTime curDate = offset switch
@@ -152,10 +189,16 @@ public class Default : MonoBehaviour
     /// </summary>
     /// <param name="year"></param>
     /// <param name="month"></param>
-    void InitCalendar(int year, int month)
+    async void InitCalendar(int year, int month)
     {
+        if (year < 1901 || year > 2040)
+        {
+            return;
+        }
         calConts = root.Q<VisualElement>("Calendars");
         calConts.Clear();
+
+        solarTerms = CalendarData.LoadSolarTerms(year);
 
         DateTime today = DateTime.Today;
         DateTime firstDay = new DateTime(year, month, 1);
@@ -175,16 +218,16 @@ public class Default : MonoBehaviour
             weekBtn.style.height = new StyleLength(new Length(10f, LengthUnit.Percent));
             weekBtn.style.width = new StyleLength(new Length(100f / totalCols, LengthUnit.Percent));
 
-            // 高亮今天对应的星期按钮
+            // 高亮当天对应的星期按钮
             if (col == (int)DateTime.Today.DayOfWeek)
                 weekBtn.AddToClassList("highlight");
 
             calConts.Add(weekBtn);
         }
 
-        Sprite normalSprite = Resources.Load<Sprite>("dayIbackimg");
-        Sprite burstSprite = Resources.Load<Sprite>("dayIback_burst");
-        Sprite dynamicTexture = Resources.Load<Sprite>("dayIbackimg");
+        //节日活动背景图 这里正常，测试暂时避免请求
+        //var monthTextures = await holidayLoader.LoadMonthTexturesAsync(year, month);
+        var monthTextures = new Dictionary<int, List<Texture2D>>();
 
         // 日期行
         for (int row = 0; row < dateRows; row++)
@@ -192,37 +235,58 @@ public class Default : MonoBehaviour
             for (int col = 0; col < totalCols; col++)
             {
                 int dayIndex = row * totalCols + col - startOffset + 1;
+
+                StyleLength h = new StyleLength(new Length(15f, LengthUnit.Percent));
+                StyleLength w = new StyleLength(new Length(100f / totalCols, LengthUnit.Percent));
+
                 Button dateBtn = new Button();
-                dateBtn.style.height = new StyleLength(new Length(15f, LengthUnit.Percent));
-                dateBtn.style.width = new StyleLength(new Length(100f / totalCols, LengthUnit.Percent));
+                dateBtn.style.height = h;
+                dateBtn.style.width = w;
                 dateBtn.style.backgroundImage = new StyleBackground(normalSprite);
 
-                // === 背景3：动态背景 ===
-                VisualElement bg3 = new VisualElement();
-                bg3.style.position = Position.Absolute;
-                bg3.style.top = 0;
-                bg3.style.left = 0;
-                bg3.style.right = 0;
-                bg3.style.bottom = 0;
-                bg3.style.backgroundImage = new StyleBackground(dynamicTexture); // StreamingAssets 载入
-                dateBtn.Add(bg3);
+                // lab：记事小红点，角标
+                Label lab = new Label();
+                lab.style.width = Length.Percent(25);
+                lab.style.height = Length.Percent(25);
+                lab.style.backgroundColor = Color.red; // 红色背景
+                lab.style.display = DisplayStyle.None;//默认隐藏
+                dateBtn.Add(lab);
+
+                //节假日广告等图片
+                Label labAD = new Label();
+                labAD.style.position = Position.Absolute;
+                labAD.style.width = Length.Percent(100);
+                labAD.style.height = Length.Percent(100);
+                labAD.style.opacity = 0.5f; // 半透明
+                dateBtn.Add(labAD);
 
                 if (dayIndex >= 1 && dayIndex <= daysInMonth)
                 {
-                    DateTime selectedDate = new DateTime(year, month, dayIndex);
+                    int day = dayIndex;
+                    DateTime selectedDate = new DateTime(year, month, day);
                     currentDate = selectedDate;
+                    noteKey = selectedDate.ToString("yyyyMMdd");
 
                     dateBtn.text = dayIndex.ToString();
 
                     // 高亮当天日期
-                    if (dayIndex == today.Day)
+                    if (selectedDate.Date == DateTime.Now.Date)
                     {
                         dateBtn.AddToClassList("highlight"); // USS 样式类控制颜色
                     }
 
+                    if (PlayerPrefs.HasKey(noteKey))
+                    {
+                        lab.style.display = DisplayStyle.Flex;
+                    }
+
+                    if (monthTextures.TryGetValue(day, out List<Texture2D> textures) && textures.Count > 0)
+                    {
+                        labAD.style.backgroundImage = new StyleBackground(textures[0]);
+                    }
+
                     dateBtn.clicked += () =>
                     {
-                        popSounds = Resources.LoadAll<AudioClip>("popsound");
                         if (popSounds != null && popSounds.Length > 0)
                         {
                             int index = UnityEngine.Random.Range(0, popSounds.Length);
@@ -230,7 +294,16 @@ public class Default : MonoBehaviour
                             AudioSource.PlayClipAtPoint(popSound, Camera.main.transform.position);
                         }
 
-                        //切换背景图
+                        ClickDayMessage(lab, selectedDate);
+
+                        dateBtn.experimental.animation
+                   .Scale(0.85f, 100) // 缩小到 85%，100ms
+                   .OnCompleted(() =>
+                   {
+                       dateBtn.experimental.animation.Scale(1f, 200); // 回弹到 100%，200ms
+                   });
+
+                        // 切换背景图并在 1 秒后恢复
                         if (burstSprite != null)
                         {
                             dateBtn.style.backgroundImage = new StyleBackground(burstSprite);
@@ -241,13 +314,12 @@ public class Default : MonoBehaviour
                                 dateBtn.style.backgroundImage = new StyleBackground(normalSprite);
                         }).ExecuteLater(1000);
 
-                        ClickDayMessage(selectedDate);
                     };
                 }
                 else
                 {
-                    dateBtn.text = "";
-                    dateBtn.SetEnabled(false);
+                    dateBtn.SetEnabled(false);// 按钮不可点击
+                    dateBtn.style.opacity = 0.2f;
                 }
 
                 calConts.Add(dateBtn);
@@ -255,13 +327,93 @@ public class Default : MonoBehaviour
         }
     }
 
-
-    void ClickDayMessage(DateTime date)
+    /// <summary>
+    /// 日期按钮被点击时
+    /// </summary>
+    /// <param name="lab"></param>
+    /// <param name="date"></param>
+    void ClickDayMessage(Label lab, DateTime date)
     {
         swipe.JumpToPage(1);//跳到第2页
 
+        InitLuckTime(date);//每天吉时不同
+
         GetMoonPhaseIndex(date);//改变导航背景图
 
+        InitCalDetail(date);//显示日历
+
+        //显示记事
+        currentLab = lab;
+        noteKey = date.ToString("yyyyMMdd");
+        if (PlayerPrefs.HasKey(noteKey))
+            noteInput.SetValueWithoutNotify(PlayerPrefs.GetString(noteKey));
+        else
+            noteInput.SetValueWithoutNotify("");
+    }
+
+    /// <summary>
+    /// 初始化日历
+    /// </summary>
+    /// <param name="date"></param>
+    async void InitCalDetail(DateTime date)
+    {
+        detailsCont = root.Q<VisualElement>("Details");
+
+        Label dongnan = detailsCont.Q<VisualElement>("DongNan").Query<Label>();
+        Label nan = detailsCont.Q<VisualElement>("Nan").Query<Label>();
+        Label xinan = detailsCont.Q<VisualElement>("XiNan").Query<Label>();
+        Label dong = detailsCont.Q<VisualElement>("Dong").Query<Label>();
+        List<Label> zhong = detailsCont.Q<VisualElement>("Zhong").Query<Label>().ToList();
+        Label xi = detailsCont.Q<VisualElement>("Xi").Query<Label>();
+        Label dongbei = detailsCont.Q<VisualElement>("DongBei").Query<Label>();
+        Label bei = detailsCont.Q<VisualElement>("Bei").Query<Label>();
+        Label xibei = detailsCont.Q<VisualElement>("XiBei").Query<Label>();
+        List<Label> others = detailsCont.Q<VisualElement>("Others").Query<Label>().ToList();
+        List<Label> nineLabelY = detailsCont.Q<VisualElement>("NineGongY").Query<Label>().ToList();
+        List<Label> nineLabelD = detailsCont.Q<VisualElement>("NineGongD").Query<Label>().ToList();
+
+        var result = cal.GetChineseCalendar(date);
+
+        //1,中国77年 民国114年 令和7年
+        dongnan.text = $"{date.Year}-{date.Month}-{date.Day} \n";
+        dongnan.text += result.LunarDate+ "\n";
+        dongnan.text += result.LunarYear.ToString();
+
+        dong.text = result.GzYear;
+
+        /*
+        TextAsset ta = Resources.Load<TextAsset>($"solarterms_year/{date.Year}");
+        dongbei.text = ta == null ? "TA NULL" : ta.text;
+        */
+
+        foreach (var kv in solarTerms)
+        {
+            if (kv.Value.Month == date.Month)
+                dongbei.text = $"{kv.Key} : {kv.Value}";
+        }
+    }
+
+    /// <summary>
+    /// 保存记事
+    /// </summary>
+    /// <param name="evt"></param>
+    void OnNoteChanged(ChangeEvent<string> evt)
+    {
+        string text = evt.newValue ?? "";
+
+        // 过滤危险字符
+        text = System.Text.RegularExpressions.Regex.Replace(text, "[\'\";\\\\/<>\\{}]", "");
+
+        // 保存或者删除
+        if (string.IsNullOrWhiteSpace(text))
+            PlayerPrefs.DeleteKey(noteKey);
+        else
+            PlayerPrefs.SetString(noteKey, text);
+        PlayerPrefs.Save();
+
+        // 更新小红点（无需遍历，直接更新当前选中的）
+        if (currentLab != null)
+            currentLab.style.display = PlayerPrefs.HasKey(noteKey) ? DisplayStyle.Flex : DisplayStyle.None;
     }
 
     /// <summary>
@@ -353,18 +505,63 @@ public class Default : MonoBehaviour
         }
     }
 
+    //竖排文字次方法
     void AddOneColumn(VisualElement container, List<string> lines)
     {
         Label lbl = new Label();
         lbl.style.whiteSpace = WhiteSpace.Normal;
         lbl.style.unityTextAlign = TextAnchor.MiddleCenter;
-        lbl.style.fontSize = 14;
-        lbl.style.width = 18; // 每列窄宽度，竖排效果
+        lbl.style.fontSize = 12;
+        lbl.style.width = 14; // 每列窄宽度，竖排效果
 
         lbl.text = string.Join("\n", lines);
 
         container.Add(lbl);
     }
 
+    /// <summary>
+    /// 六曜字体颜色
+    /// </summary>
+    /// <param name="liuyao"></param>
+    /// <param name="ve"></param>
+    string GetLiuYaoColor(string liuyao)
+    {
+        int hour = DateTime.Now.Hour;
+        switch (liuyao)
+        {
+            case "大安": return "green";
+            case "赤口": return (hour > 11 && hour < 13) ? "green" : "black";
+            case "先勝": return (hour < 12) ? "green" : "black";
+            case "友引": return (hour < 11 || hour > 13) ? "green" : "black";
+            case "先負": return (hour > 12) ? "green" : "black";
+            default: return "black";
+        }
+    }
 
+    /// <summary>
+    /// 绿色吉黑色凶，红色用于节日不使用
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="luck"></param>
+    /// <returns></returns>
+    string FormatLuckText(string name, string luck)
+    {
+        return luck == "吉" ? $" <color=green>{name} {luck}</color>" : $" <color=black>{name} {luck}</color>";
+    }
+}
+
+
+///
+///另一个方法
+/// 
+/// <summary>
+/// 轻量绘制容器
+/// </summary>
+public class ImmediateVisualElement : VisualElement
+{
+    public ImmediateVisualElement()
+    {
+        // 允许使用绘制回调
+        generateVisualContent += _ => { };
+    }
 }

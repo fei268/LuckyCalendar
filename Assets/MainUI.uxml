@@ -1,16 +1,70 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="project://database/Assets/MainCss.uss?fileID=7433441132597879392&amp;guid=1045820ce676245b3b7a65ac1a4d7662&amp;type=3#MainCss" />
     <ui:VisualElement style="flex-grow: 1;">
-        <ui:VisualElement name="Contents" style="flex-grow: 1; height: 45%; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; position: relative; width: 100%; flex-direction: row;">
+        <ui:VisualElement name="Contents" style="flex-grow: 1; height: 50%; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; position: relative; width: 100%; flex-direction: row;">
             <ui:ScrollView name="NormalCont" mode="Vertical" horizontal-scroller-visibility="Auto" vertical-scroller-visibility="Hidden" language-direction="Inherit" style="height: 100%; width: 100%; flex-wrap: wrap; flex-grow: 0; align-items: flex-start; align-self: auto; white-space: pre-wrap; position: absolute;" />
-            <ui:VisualElement name="Details" style="flex-grow: 1; width: 100%; height: 100%; position: absolute; left: 100%;">
-                <ui:Label text="111" />
+            <ui:VisualElement name="Details" style="flex-grow: 1; width: 100%; height: 100%; position: absolute; left: 100%; flex-direction: row; flex-wrap: wrap;">
+                <ui:VisualElement name="DongNan" style="flex-grow: 1; height: 25%; width: 30%; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Nan" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="XiNan" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Dong" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Zhong" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 80%; white-space: normal;" />
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 20%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Xi" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="DongBei" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Bei" style="flex-grow: 1; height: 25%; width: 30%; flex-direction: row;">
+                    <ui:Label text="Label" name="LabelD" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 5%; height: 100%; white-space: normal;" />
+                    <ui:VisualElement name="NineGongY" style="flex-grow: 1; background-size: 100% 100%; width: 45%; height: 100%; flex-direction: row; flex-wrap: wrap; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="NineGongD" style="flex-grow: 1; width: 45%; height: 100%; flex-direction: row; flex-wrap: wrap; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0;">
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                        <ui:Label text="1" style="width: 28%; height: 28%; margin-top: 1px; margin-right: 1px; margin-bottom: 1px; margin-left: 1px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                    </ui:VisualElement>
+                    <ui:Label text="Label" name="LabelX" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 5%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="XiBei" style="flex-grow: 1; height: 25%; width: 30%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Others" style="flex-grow: 1; width: 100%; height: 15%;">
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                    <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 100%; height: 100%; white-space: normal;" />
+                </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="ZiweiConts" style="flex-grow: 1; position: absolute; width: 100%; height: 100%; left: 200%;">
                 <ui:Label text="222" />
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="Center" style="flex-grow: 1; height: 15%;">
+        <ui:VisualElement name="Center" style="flex-grow: 1; height: 10%;">
             <ui:VisualElement name="LuckTimeNum" style="flex-grow: 1; flex-direction: row; height: 25%;">
                 <ui:Label style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
                 <ui:Label style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
@@ -26,25 +80,25 @@
                 <ui:Label style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
             </ui:VisualElement>
             <ui:VisualElement name="LuckTimes" style="flex-grow: 1; flex-direction: row; height: 35%;">
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
-                <ui:Label text="Label" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8.3%; height: 100%; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
+                <ui:Label text="子" style="width: 8.3%; height: 100%; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; -unity-text-align: middle-center;" />
             </ui:VisualElement>
             <ui:VisualElement name="Menu" style="flex-grow: 1; flex-direction: row; height: 40%;">
                 <ui:DropdownField choices="1,2,3" name="Mode" style="margin-top: 0; margin-bottom: 0; margin-left: 0; width: 18%;" />
                 <ui:Button style="border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-top-left-radius: 60px; border-top-right-radius: 60px; border-bottom-right-radius: 60px; border-bottom-left-radius: 60px; margin-right: 2px; margin-left: 2px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8%;" />
                 <ui:Button style="border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-top-left-radius: 60px; border-top-right-radius: 60px; border-bottom-right-radius: 60px; border-bottom-left-radius: 60px; margin-right: 2px; margin-left: 2px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8%;" />
                 <ui:Button style="border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-top-left-radius: 60px; border-top-right-radius: 60px; border-bottom-right-radius: 60px; border-bottom-left-radius: 60px; margin-right: 2px; margin-left: 2px; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; width: 8%;" />
-                <ui:TextField placeholder-text="filler text" style="margin-top: 0; margin-right: 0; margin-bottom: 0; width: 50%;" />
+                <ui:TextField placeholder-text="filler text" name="NoteInput" max-length="20" style="margin-top: 0; margin-right: 0; margin-bottom: 0; width: 50%;" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="Calendars" style="flex-grow: 1; height: 40%; flex-direction: row; flex-wrap: wrap; justify-content: space-between;" />
